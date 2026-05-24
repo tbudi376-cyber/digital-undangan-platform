@@ -21,8 +21,16 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
     setIsMounted(true);
     if (!targetDate) return;
     
-    // Set target to midnight of the target date
-    const target = new Date(`${targetDate}T00:00:00`).getTime();
+    // Try to parse the target date. 
+    // Example targetDate: "2026-12-31" -> "2026-12-31T00:00:00"
+    const targetStr = targetDate.includes("T") ? targetDate : `${targetDate}T00:00:00`;
+    const target = new Date(targetStr).getTime();
+
+    // Fallback if parsing fails (returns NaN)
+    if (isNaN(target)) {
+      setTimeLeft({ hari: 0, jam: 0, menit: 0, detik: 0 });
+      return;
+    }
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
