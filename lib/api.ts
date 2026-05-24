@@ -6,7 +6,7 @@
 // to cache responses on Vercel's edge and prevent GAS rate-limiting.
 // ============================================================
 
-import type { ClientData, RsvpPayload, GASResponse } from "@/types";
+import type { ClientData, RsvpPayload, GASResponse, RsvpEntry } from "@/types";
 
 const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL!;
 
@@ -52,6 +52,33 @@ export async function getClientData(
   } catch (error) {
     console.error(`[getClientData] Fetch failed for slug "${slug}":`, error);
     return null;
+  }
+}
+
+/**
+ * Fetch guestbook (RSVP) messages by slug from Google Apps Script.
+ * Uses ISR with `next: { revalidate: 60 }` (1 minute).
+ */
+export async function getGuestbook(slug: string): Promise<RsvpEntry[]> {
+  try {
+    const url = `${GAS_URL}?slug=${encodeURIComponent(slug)}&action=guestbook`;
+    const res = await fetch(url, {
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      console.error(`[getGuestbook] HTTP error: ${res.status}`);
+      return [];
+    }
+
+    const json: GASResponse<RsvpEntry[]> = await res.json();
+    if (json.status === "success" && json.data) {
+      return json.data;
+    }
+    return [];
+  } catch (error) {
+    console.error(`[getGuestbook] Fetch failed for slug "${slug}":`, error);
+    return [];
   }
 }
 

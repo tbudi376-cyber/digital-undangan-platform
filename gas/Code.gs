@@ -37,6 +37,7 @@ function createJsonResponse(data) {
 function doGet(e) {
   try {
     var slug = e.parameter.slug;
+    var action = e.parameter.action;
 
     if (!slug) {
       return createJsonResponse({
@@ -46,6 +47,40 @@ function doGet(e) {
     }
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // ── Handle Guestbook (RSVP) Action ──
+    if (action === "guestbook") {
+      var sheetRsvp = ss.getSheetByName("RSVP");
+      if (!sheetRsvp) {
+        return createJsonResponse({ status: "error", message: "Sheet 'RSVP' tidak ditemukan" });
+      }
+
+      var rsvpData = sheetRsvp.getDataRange().getValues();
+      var rsvpHeaders = rsvpData[0];
+      var rsvps = [];
+
+      // Columns: slug, nama_tamu, kehadiran, pesan, timestamp
+      // Loop from end to start for reverse chronological (newest first)
+      for (var k = rsvpData.length - 1; k > 0; k--) {
+        if (rsvpData[k][0].toString().trim().toLowerCase() === slug.trim().toLowerCase()) {
+          var entry = {};
+          for (var l = 0; l < rsvpHeaders.length; l++) {
+            entry[rsvpHeaders[l].toString().trim()] = rsvpData[k][l];
+          }
+          // Only add if they left a message
+          if (entry.pesan) {
+            rsvps.push(entry);
+          }
+        }
+      }
+
+      return createJsonResponse({
+        status: "success",
+        data: rsvps
+      });
+    }
+
+    // ── Handle Default Action (DataKlien) ──
     var sheet = ss.getSheetByName("DataKlien");
 
     if (!sheet) {
@@ -147,6 +182,18 @@ function doPost(e) {
   }
 }
 
+/**
+ * One-time setup — Run this function manually to create the sheet tabs
+ * with correct headers. Go to Apps Script Editor → Run → setupDatabase.
+ *
+ * DataKlien column order (A → U):
+ *   A: slug, B: theme, C: hero_image, D: music_url,
+ *   E: bride_full_name, F: bride_nickname, G: groom_full_name, H: groom_nickname,
+ *   I: akad_date, J: akad_time, K: akad_location, L: akad_map_url,
+ *   M: resepsi_date, N: resepsi_time, O: resepsi_location, P: resepsi_map_url,
+ *   Q: bank_name, R: bank_account, S: account_owner, T: qris_image,
+ *   U: gallery_images
+ */
 function setupDatabase() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -156,15 +203,41 @@ function setupDatabase() {
     sheetKlien = ss.insertSheet("DataKlien");
   }
   
-  // Set Header untuk DataKlien
-  var headersKlien = ["slug", "theme_id", "nama_pria", "nama_wanita", "tanggal_akad", "lokasi_akad", "url_foto_cover"];
+  // Set Header untuk DataKlien (21 kolom, urutan sesuai PRD.md)
+  var headersKlien = [
+    // Data Dasar (A-D)
+    "slug", "theme", "hero_image", "music_url",
+    // Profil Mempelai (E-H)
+    "bride_full_name", "bride_nickname", "groom_full_name", "groom_nickname",
+    // Akad (I-L)
+    "akad_date", "akad_time", "akad_location", "akad_map_url",
+    // Resepsi (M-P)
+    "resepsi_date", "resepsi_time", "resepsi_location", "resepsi_map_url",
+    // Amplop Digital (Q-T)
+    "bank_name", "bank_account", "account_owner", "qris_image",
+    // Galeri (U)
+    "gallery_images"
+  ];
   sheetKlien.getRange(1, 1, 1, headersKlien.length).setValues([headersKlien]);
   sheetKlien.getRange(1, 1, 1, headersKlien.length).setFontWeight("bold");
   sheetKlien.setFrozenRows(1);
   
   // Masukkan Dummy Data jika sheet masih kosong (hanya ada header)
   if (sheetKlien.getLastRow() === 1) {
-    var dummyData = ["romeo-juliet", "elegant", "Romeo", "Juliet", "2026-12-31", "Gedung Serbaguna Jakarta", ""];
+    var dummyData = [
+      // Data Dasar
+      "romeo-juliet", "elegant", "", "",
+      // Profil Mempelai
+      "Juliet Capulet", "Juliet", "Romeo Montague", "Romeo",
+      // Akad
+      "2026-12-31", "08:00 - 10:00 WIB", "Masjid Istiqlal, Jakarta", "https://maps.google.com/?q=Masjid+Istiqlal",
+      // Resepsi
+      "2026-12-31", "11:00 - 14:00 WIB", "Gedung Serbaguna, Jakarta", "https://maps.google.com/?q=Gedung+Serbaguna",
+      // Amplop Digital
+      "BCA", "1234567890", "Romeo Montague", "",
+      // Galeri
+      ""
+    ];
     sheetKlien.appendRow(dummyData);
   }
 

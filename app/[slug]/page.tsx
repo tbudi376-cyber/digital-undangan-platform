@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getClientData } from "@/lib/api";
+import { getClientData, getGuestbook } from "@/lib/api";
 import { ThemeRenderer } from "@/components/themes/ThemeRenderer";
 
 // ---------------------------------------------------------------------------
@@ -13,6 +13,7 @@ import { ThemeRenderer } from "@/components/themes/ThemeRenderer";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 /**
@@ -31,8 +32,8 @@ export async function generateMetadata({
     };
   }
 
-  const title = `Undangan Pernikahan ${data.nama_pria} & ${data.nama_wanita}`;
-  const description = `Anda diundang ke pernikahan ${data.nama_pria} & ${data.nama_wanita}. Mohon konfirmasi kehadiran Anda.`;
+  const title = `Undangan Pernikahan ${data.groom_nickname} & ${data.bride_nickname}`;
+  const description = `Anda diundang ke pernikahan ${data.groom_full_name} & ${data.bride_full_name}. Mohon konfirmasi kehadiran Anda.`;
 
   return {
     title,
@@ -41,7 +42,7 @@ export async function generateMetadata({
       title,
       description,
       type: "website",
-      images: data.url_foto_cover ? [data.url_foto_cover] : [],
+      images: data.hero_image ? [data.hero_image] : [],
     },
   };
 }
@@ -50,13 +51,19 @@ export async function generateMetadata({
  * The main dynamic page component.
  * Fetches client data using ISR and renders the correct theme.
  */
-export default async function InvitationPage({ params }: PageProps) {
+export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const clientData = await getClientData(slug);
+  const resolvedSearchParams = await searchParams;
+  const to = resolvedSearchParams?.to;
+  const guestName = typeof to === "string" ? to : Array.isArray(to) ? to[0] : undefined;
+  const [clientData, guestbookData] = await Promise.all([
+    getClientData(slug),
+    getGuestbook(slug)
+  ]);
 
   if (!clientData) {
     notFound();
   }
 
-  return <ThemeRenderer data={clientData} />;
+  return <ThemeRenderer data={clientData} guestName={guestName} guestbook={guestbookData} />;
 }

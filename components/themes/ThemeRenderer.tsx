@@ -1,6 +1,6 @@
 "use client";
 
-import type { ClientData } from "@/types";
+import type { ClientData, RsvpEntry } from "@/types";
 import { ThemeElegant } from "./ThemeElegant";
 import { ThemeRustic } from "./ThemeRustic";
 import type { ComponentType } from "react";
@@ -16,6 +16,8 @@ import type { ComponentType } from "react";
 
 interface ThemeProps {
   data: ClientData;
+  guestName?: string;
+  guestbook?: RsvpEntry[];
 }
 
 /**
@@ -32,9 +34,9 @@ const THEME_MAP: Record<string, ComponentType<ThemeProps>> = {
  */
 const DEFAULT_THEME = "elegant";
 
-export function ThemeRenderer({ data }: ThemeProps) {
-  const themeId = data.theme_id?.toLowerCase().trim() || DEFAULT_THEME;
+export function ThemeRenderer({ data, guestName, guestbook = [] }: ThemeProps) {
+  const themeId = data.theme?.toLowerCase().trim() || DEFAULT_THEME;
   const ThemeComponent = THEME_MAP[themeId] || THEME_MAP[DEFAULT_THEME];
 
-  return <ThemeComponent data={data} />;
+  return <ThemeComponent data={data} guestName={guestName} guestbook={guestbook} />;
 }
