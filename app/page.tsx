@@ -51,6 +51,14 @@ const FEATURES = [
 
 const KATALOG = [
   {
+    id: "theme9",
+    title: "Soft Pastel (Theme 9)",
+    description: "Desain modern romantis dengan nuansa dark violet & pastel, kartu ATM untuk amplop digital, cover interaktif, dan timeline love story.",
+    image: "https://res.cloudinary.com/cludinarypartnerinaja/image/upload/v1777517102/kekawinan/themes/ox1sdkfqe9wiffkh3png.png",
+    accent: "bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100",
+    gradient: "from-purple-600 to-indigo-600",
+  },
+  {
     id: "elegant",
     title: "Elegant Rose",
     description: "Desain klasik dan mewah dengan nuansa pink dan tipografi serif. Sempurna untuk pernikahan formal.",

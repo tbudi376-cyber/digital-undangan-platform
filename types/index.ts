@@ -66,6 +66,24 @@ export interface ClientData {
   // ── Galeri ──────────────────────────────────────────────────
   /** URL foto galeri dari Google Drive, dipisahkan koma (contoh: "url1, url2, url3") */
   gallery_images: string;
+
+  // ── Data Tambahan Opsional (Tema Lanjutan) ────────────────────
+  /** Keterangan orang tua mempelai wanita */
+  bride_parents?: string;
+  /** Keterangan orang tua mempelai pria */
+  groom_parents?: string;
+  /** Kutipan ayat / kata mutiara */
+  quote?: string;
+  /** Sumber kutipan ayat (contoh: "Q.S Al-Qiyamah: 39") */
+  quote_source?: string;
+  /** Link streaming online / YouTube / Zoom */
+  stream_link?: string;
+  /** Alamat pengiriman kado fisik */
+  physical_gift_address?: string;
+  /** Penerima kado fisik */
+  physical_gift_recipient?: string;
+  /** Nomor telepon penerima kado fisik */
+  physical_gift_phone?: string;
 }
 
 /**
