@@ -65,5 +65,11 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     notFound();
   }
 
+  // Allow overriding theme via URL for catalog demo purposes
+  const themeOverride = typeof resolvedSearchParams?.theme === "string" ? resolvedSearchParams.theme : undefined;
+  if (themeOverride) {
+    clientData.theme = themeOverride;
+  }
+
   return <ThemeRenderer data={clientData} guestName={guestName} guestbook={guestbookData} />;
 }

@@ -3,6 +3,7 @@
 import type { ClientData, RsvpEntry } from "@/types";
 import { ThemeElegant } from "./ThemeElegant";
 import { ThemeRustic } from "./ThemeRustic";
+import { ThemeMinimalist } from "./ThemeMinimalist";
 import type { ComponentType } from "react";
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,7 @@ interface ThemeProps {
 const THEME_MAP: Record<string, ComponentType<ThemeProps>> = {
   elegant: ThemeElegant,
   rustic: ThemeRustic,
+  minimalist: ThemeMinimalist,
 };
 
 /**

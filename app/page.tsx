@@ -49,6 +49,33 @@ const FEATURES = [
   },
 ];
 
+const KATALOG = [
+  {
+    id: "elegant",
+    title: "Elegant Rose",
+    description: "Desain klasik dan mewah dengan nuansa pink dan tipografi serif. Sempurna untuk pernikahan formal.",
+    image: "https://placehold.co/600x800/ffe4e6/be123c?text=Elegant+Theme",
+    accent: "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100",
+    gradient: "from-rose-500 to-pink-500",
+  },
+  {
+    id: "rustic",
+    title: "Rustic Garden",
+    description: "Sentuhan alami dengan nuansa hijau sage dan earthy tones. Cocok untuk pernikahan outdoor/garden.",
+    image: "https://placehold.co/600x800/dcfce7/166534?text=Rustic+Theme",
+    accent: "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100",
+    gradient: "from-emerald-500 to-teal-500",
+  },
+  {
+    id: "minimalist",
+    title: "Modern Minimalist",
+    description: "Bersih, monokrom, dan fokus pada tipografi modern. Menampilkan kesan elegan yang simpel namun kuat.",
+    image: "https://placehold.co/600x800/f1f5f9/0f172a?text=Minimalist+Theme",
+    accent: "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200",
+    gradient: "from-slate-700 to-slate-900",
+  },
+];
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 overflow-x-hidden">
@@ -216,6 +243,80 @@ export default function Home() {
                 <div
                   className={`mt-6 h-1 w-0 group-hover:w-16 rounded-full bg-gradient-to-r ${feature.accent} transition-all duration-500`}
                 />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* KATALOG TEMA                                               */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <section id="katalog" className="py-24 md:py-32 px-6 bg-white border-y border-slate-100">
+        <div className="max-w-6xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold tracking-widest uppercase text-rose-500 mb-3">
+              Katalog
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-800">
+              Pilih Tema{" "}
+              <span className="bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-transparent">
+                Favoritmu
+              </span>
+            </h2>
+          </div>
+
+          {/* Catalog grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            {KATALOG.map((tema) => (
+              <div
+                key={tema.id}
+                className="group flex flex-col bg-slate-50 rounded-3xl overflow-hidden border border-slate-200 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500"
+              >
+                {/* Image / Thumbnail */}
+                <div className="relative aspect-[4/5] overflow-hidden bg-slate-200">
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500 z-10" />
+                  <img
+                    src={tema.image}
+                    alt={tema.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Badge */}
+                  <div className="absolute top-4 right-4 z-20">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-bold uppercase tracking-wider rounded-full text-slate-700 shadow-sm">
+                      {tema.title}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex flex-col flex-1 p-6 md:p-8">
+                  <h3 className="text-2xl font-bold text-slate-800 mb-3">
+                    {tema.title}
+                  </h3>
+                  <p className="text-slate-500 mb-8 leading-relaxed flex-1">
+                    {tema.description}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-3 mt-auto">
+                    <Link
+                      href={`/romeo-juliet?theme=${tema.id}`}
+                      className={`w-full py-3.5 text-center font-semibold text-white rounded-xl shadow-md transition-all hover:-translate-y-0.5 bg-gradient-to-r ${tema.gradient}`}
+                    >
+                      Lihat Demo
+                    </Link>
+                    <a
+                      href={`https://wa.me/6282176775545?text=Halo%20Admin%20Temu%20Waktu,%20saya%20mau%20pesan%20undangan%20digital%20tema%20${tema.title}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-full py-3.5 text-center font-semibold rounded-xl border transition-all ${tema.accent}`}
+                    >
+                      Pesan Tema Ini
+                    </a>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
