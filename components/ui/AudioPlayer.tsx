@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 
 interface AudioPlayerProps {
   audioUrl: string;
+  autoPlayTrigger?: boolean;
 }
+
+const emptySubscribe = () => () => {};
 
 /**
  * Ekstrak Video ID dari berbagai format URL YouTube:
@@ -26,9 +29,13 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
-export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
+export function AudioPlayer({ audioUrl, autoPlayTrigger }: AudioPlayerProps) {
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   // YouTube iframe HANYA di-mount setelah klik pertama user
   const [showYT, setShowYT] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -37,12 +44,7 @@ export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
   const isYouTube = audioUrl?.includes('youtube.com') || audioUrl?.includes('youtu.be');
   const videoId = isYouTube ? extractYouTubeId(audioUrl) : null;
 
-  // 1. Mount di client-side
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // 2. Setup HTML5 Audio HANYA jika bukan YouTube
+  // Setup HTML5 Audio HANYA jika bukan YouTube
   useEffect(() => {
     if (!isMounted || isYouTube || !audioUrl) return;
 
@@ -56,6 +58,25 @@ export function AudioPlayer({ audioUrl }: AudioPlayerProps) {
       }
     };
   }, [isMounted, isYouTube, audioUrl]);
+
+  // Handle external trigger (misal saat CoverScreen 'Buka Undangan' diklik)
+  useEffect(() => {
+    if (autoPlayTrigger && !isPlaying) {
+      if (isYouTube && videoId) {
+        queueMicrotask(() => {
+          setShowYT(true);
+          setIsPlaying(true);
+        });
+      } else if (audioRef.current) {
+        audioRef.current
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.warn("Audio autoplay blocked by browser policy:", err);
+          });
+      }
+    }
+  }, [autoPlayTrigger, isYouTube, videoId, isPlaying]);
 
   const togglePlay = useCallback(() => {
     if (isYouTube && videoId) {

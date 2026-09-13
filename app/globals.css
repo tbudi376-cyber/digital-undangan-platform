@@ -91,6 +91,27 @@ body {
   animation: pulse-glow 4s ease-in-out infinite;
 }
 
+/* ── Live Equalizer Bars Animations ─────────────────────────────── */
+@keyframes equalizer1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+@keyframes equalizer2 {
+  0%, 100% { height: 16px; }
+  50% { height: 6px; }
+}
+
+@keyframes equalizer3 {
+  0%, 100% { height: 6px; }
+  50% { height: 18px; }
+}
+
+@keyframes equalizer4 {
+  0%, 100% { height: 14px; }
+  50% { height: 4px; }
+}
+
 /* ── Smooth scrolling ──────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;

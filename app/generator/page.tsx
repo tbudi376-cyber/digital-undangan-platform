@@ -1,25 +1,50 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
-export default function LinkGeneratorPage() {
-  const [slug, setSlug] = useState('cintanico-171');
+interface RsvpSummaryData {
+  slug: string;
+  coupleName: string;
+  totalEntries: number;
+  totalHadir: number;
+  totalTidakHadir: number;
+  hadirPercentage: number;
+  entries: {
+    nama_tamu: string;
+    kehadiran: string;
+    pesan: string;
+    timestamp: string;
+  }[];
+  waReportText: string;
+}
+
+export default function GeneratorAndAdminPage() {
+  const [activeTab, setActiveTab] = useState<'link' | 'recap'>('link');
+
+  // ==========================================
+  // TAB 1: GUEST LINK GENERATOR
+  // ==========================================
+  const [slug, setSlug] = useState('desti-anton');
   const [guestInput, setGuestInput] = useState('');
   const [customMessage, setCustomMessage] = useState(
     'Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami. Detail undangan dapat dilihat pada tautan berikut:'
   );
   const [generatedLinks, setGeneratedLinks] = useState<{ name: string; url: string; waUrl: string }[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [copiedAll, setCopiedAll] = useState(false);
 
   const handleGenerate = () => {
     if (!guestInput.trim() || !slug.trim()) return;
 
     const names = guestInput.split('\n').filter((name) => name.trim() !== '');
-    const baseUrl = window.location.origin;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
     const links = names.map((name) => {
       const trimmedName = name.trim();
-      const invitationUrl = `${baseUrl}/${slug}?to=${encodeURIComponent(trimmedName)}`;
-      
+      const invitationUrl = `${baseUrl}/${cleanSlug}?to=${encodeURIComponent(trimmedName)}`;
       const fullMessage = `Halo *${trimmedName}*,\n\n${customMessage}\n\n${invitationUrl}`;
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`;
 
@@ -33,93 +58,485 @@ export default function LinkGeneratorPage() {
     setGeneratedLinks(links);
   };
 
+  const handleCopyAll = () => {
+    if (generatedLinks.length === 0) return;
+    const textAll = generatedLinks.map((l) => `${l.name}: ${l.url}`).join('\n');
+    navigator.clipboard.writeText(textAll);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2500);
+  };
+
+  const filteredLinks = generatedLinks.filter((l) =>
+    l.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // ==========================================
+  // TAB 2: RSVP & CATERING RECAP (Q4)
+  // ==========================================
+  const [recapSlug, setRecapSlug] = useState('desti-anton');
+  const [isLoadingRecap, setIsLoadingRecap] = useState(false);
+  const [recapData, setRecapData] = useState<RsvpSummaryData | null>(null);
+  const [recapError, setRecapError] = useState<string | null>(null);
+  const [copiedWaReport, setCopiedWaReport] = useState(false);
+  const [tableFilter, setTableFilter] = useState<'all' | 'hadir' | 'tidak'>('all');
+
+  const fetchRsvpRecap = async (targetSlug: string) => {
+    const clean = targetSlug.trim().toLowerCase();
+    if (!clean) return;
+
+    setIsLoadingRecap(true);
+    setRecapError(null);
+
+    try {
+      const res = await fetch(`/api/rsvp-summary?slug=${encodeURIComponent(clean)}`);
+      const json = await res.json();
+
+      if (json.status === 'success' && json.data) {
+        setRecapData(json.data);
+      } else {
+        setRecapError(json.error || 'Gagal mengambil data RSVP untuk slug ini');
+        setRecapData(null);
+      }
+    } catch {
+      setRecapError('Terjadi kendala jaringan saat menghubungi server');
+    } finally {
+      setIsLoadingRecap(false);
+    }
+  };
+
+  const handleCopyWaReport = () => {
+    if (!recapData?.waReportText) return;
+    navigator.clipboard.writeText(recapData.waReportText);
+    setCopiedWaReport(true);
+    setTimeout(() => setCopiedWaReport(false), 2500);
+  };
+
+  const filteredEntries = recapData?.entries.filter((entry) => {
+    if (tableFilter === 'hadir') return (entry.kehadiran || '').toLowerCase() === 'hadir';
+    if (tableFilter === 'tidak') return (entry.kehadiran || '').toLowerCase() !== 'hadir';
+    return true;
+  }) || [];
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 text-gray-900">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">🎁 Temu Waktu - Guest Link Generator</h1>
-        <p className="text-gray-500 mb-8 text-sm">Buat ratusan link undangan personal untuk WhatsApp klien dalam hitungan detik.</p>
-
-        <div className="space-y-6">
-          {/* Input Slug */}
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
+      <div className="max-w-4xl mx-auto">
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-slate-200 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Slug Undangan Klien</label>
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder="contoh: budi-wati-421"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
-            />
+            <div className="flex items-center gap-2 mb-1">
+              <Link
+                href="/"
+                className="text-xs text-rose-600 font-semibold hover:underline flex items-center gap-1"
+              >
+                ← Kembali ke Beranda
+              </Link>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              Temu Waktu — Admin &amp; Generator Suite
+            </h1>
+            <p className="text-slate-500 text-sm mt-1">
+              Manajemen link tamu personal &amp; rekap katering otomatis untuk pengantin.
+            </p>
           </div>
 
-          {/* Input Template Pesan */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Template Pengantar WhatsApp</label>
-            <textarea
-              rows={3}
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white text-sm"
-            />
+          {/* Tab Selector */}
+          <div className="flex p-1 bg-slate-200/80 rounded-xl self-start sm:self-center">
+            <button
+              onClick={() => setActiveTab('link')}
+              className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'link'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🔗 Link WhatsApp Tamu
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('recap');
+                if (!recapData && !isLoadingRecap) {
+                  fetchRsvpRecap(recapSlug);
+                }
+              }}
+              className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'recap'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              📊 Rekap RSVP &amp; Katering
+            </button>
           </div>
-
-          {/* Input Daftar Nama Tamu */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Daftar Nama Tamu <span className="text-gray-400 font-normal">(Satu nama per baris)</span>
-            </label>
-            <textarea
-              rows={6}
-              value={guestInput}
-              onChange={(e) => setGuestInput(e.target.value)}
-              placeholder={"Budi Santoso\nSiti Rahma\nJoko Widodo"}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white tracking-wide"
-            />
-          </div>
-
-          {/* Tombol Generate */}
-          <button
-            type="button"
-            onClick={handleGenerate}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors duration-200"
-          >
-            🔗 Generate Link Undangan
-          </button>
         </div>
 
-        {/* Tampilan Hasil */}
-        {generatedLinks.length > 0 && (
-          <div className="mt-12 border-t border-gray-100 pt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">📋 Hasil Pembuatan Link ({generatedLinks.length} Tamu)</h2>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-              {generatedLinks.map((item, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl gap-4">
-                  <div className="truncate max-w-xs sm:max-w-sm">
-                    <p className="font-semibold text-sm text-gray-800">{item.name}</p>
-                    <p className="text-xs text-gray-400 truncate mt-0.5">{item.url}</p>
+        {/* ============================================================ */}
+        {/* TAB 1: BROADCAST LINK GENERATOR */}
+        {/* ============================================================ */}
+        {activeTab === 'link' && (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">
+                Generator Link Undangan WhatsApp Tamu
+              </h2>
+              <p className="text-slate-500 text-xs sm:text-sm">
+                Setiap nama tamu akan otomatis disisipkan ke parameter URL (`?to=Nama+Tamu`) sehingga membuka cover dengan sapaan personal.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Input Slug */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Slug Undangan Klien
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    placeholder="contoh: desti-anton"
+                    className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                  />
+                  <Link
+                    href={`/${slug.trim() || 'demo'}?preview=true`}
+                    target="_blank"
+                    className="shrink-0 px-4 py-2.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Preview</span> ↗
+                  </Link>
+                </div>
+              </div>
+
+              {/* Template Pesan */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Template Pesan Pengantar WhatsApp
+                </label>
+                <textarea
+                  rows={3}
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                />
+              </div>
+
+              {/* Daftar Tamu */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Daftar Nama Tamu <span className="text-slate-400 font-normal lowercase">(satu nama per baris)</span>
+                </label>
+                <textarea
+                  rows={6}
+                  value={guestInput}
+                  onChange={(e) => setGuestInput(e.target.value)}
+                  placeholder={"Budi Santoso & Keluarga\nSiti Rahma, S.Pd\nDr. Joko Widodo & Istri\nDimas Pratama"}
+                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white font-mono"
+                />
+              </div>
+
+              {/* Generate Button */}
+              <button
+                type="button"
+                onClick={handleGenerate}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-xl transition-all duration-200 shadow-md cursor-pointer text-sm"
+              >
+                ✨ Buat Link Undangan Personal
+              </button>
+            </div>
+
+            {/* Generated Links Result */}
+            {generatedLinks.length > 0 && (
+              <div className="pt-6 border-t border-slate-100 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      📋 Hasil Pembuatan ({generatedLinks.length} Tamu)
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Kirim langsung via WhatsApp Web/App atau salin seluruh link sekaligus.
+                    </p>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Cari nama tamu..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white w-40"
+                    />
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(item.url);
-                        alert(`Link untuk ${item.name} berhasil disalin!`);
-                      }}
-                      className="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-100 text-xs font-medium rounded-md transition-colors text-gray-700"
+                      onClick={handleCopyAll}
+                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0 shadow-sm"
                     >
-                      Salin Link
+                      {copiedAll ? '✓ Tersalin Semua!' : 'Salin Semua Link'}
                     </button>
-                    <a
-                      href={item.waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md text-center transition-colors flex items-center"
-                    >
-                      Kirim WA
-                    </a>
                   </div>
                 </div>
-              ))}
+
+                <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                  {filteredLinks.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-50 border border-slate-200/80 rounded-xl gap-3 hover:bg-slate-100/60 transition-colors"
+                    >
+                      <div className="truncate max-w-sm">
+                        <p className="font-semibold text-xs sm:text-sm text-slate-800">{item.name}</p>
+                        <p className="text-[11px] text-slate-400 truncate font-mono mt-0.5">{item.url}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.url);
+                          }}
+                          className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors text-slate-700 shadow-2xs cursor-pointer"
+                        >
+                          Salin Link
+                        </button>
+                        <a
+                          href={item.waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg text-center transition-colors flex items-center gap-1 shadow-2xs"
+                        >
+                          <span>Kirim WA</span> 💬
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 2: RSVP & CATERING RECAP (Q4) */}
+        {/* ============================================================ */}
+        {activeTab === 'recap' && (
+          <div className="space-y-6">
+            {/* Control Card */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 mb-1">
+                  Rekap RSVP &amp; Estimasi Headcount Katering
+                </h2>
+                <p className="text-slate-500 text-xs sm:text-sm">
+                  Tarik data konfirmasi kehadiran tamu secara langsung dari Google Sheets, hitung kebutuhan porsi, dan buat laporan WhatsApp rapi dalam 1 kali klik.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={recapSlug}
+                    onChange={(e) => setRecapSlug(e.target.value)}
+                    placeholder="Masukkan slug klien (contoh: desti-anton)"
+                    className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={isLoadingRecap}
+                  onClick={() => fetchRsvpRecap(recapSlug)}
+                  className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer shrink-0"
+                >
+                  {isLoadingRecap ? 'Mengambil Data...' : '⚡ Tarik Data RSVP'}
+                </button>
+              </div>
+
+              {/* Quick Chips */}
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span>Coba slug contoh:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecapSlug('desti-anton');
+                    fetchRsvpRecap('desti-anton');
+                  }}
+                  className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-mono"
+                >
+                  desti-anton
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecapSlug('romeo-juliet');
+                    fetchRsvpRecap('romeo-juliet');
+                  }}
+                  className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-mono"
+                >
+                  romeo-juliet
+                </button>
+              </div>
             </div>
+
+            {/* Error Display */}
+            {recapError && (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm">
+                ⚠️ {recapError}
+              </div>
+            )}
+
+            {/* Recap Content */}
+            {recapData && (
+              <>
+                {/* 4 Metric Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <p className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Total Respon</p>
+                    <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{recapData.totalEntries}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Tamu merespons</p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs bg-gradient-to-b from-white to-emerald-50/30">
+                    <p className="text-xs font-semibold uppercase text-emerald-700 tracking-wider">Konfirmasi Hadir</p>
+                    <p className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">{recapData.totalHadir}</p>
+                    <p className="text-[11px] text-emerald-700 font-medium mt-0.5">
+                      {recapData.hadirPercentage}% tingkat kehadiran
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <p className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Berhalangan</p>
+                    <p className="text-2xl sm:text-3xl font-black text-slate-600 mt-1">{recapData.totalTidakHadir}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Tamu berhalangan</p>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-amber-200 shadow-2xs bg-gradient-to-b from-white to-amber-50/30">
+                    <p className="text-xs font-semibold uppercase text-amber-800 tracking-wider">Estimasi Katering</p>
+                    <p className="text-2xl sm:text-3xl font-black text-amber-700 mt-1">
+                      {Math.ceil(recapData.totalHadir * 1.15)}
+                    </p>
+                    <p className="text-[11px] text-amber-800 font-medium mt-0.5">porsi (+15% buffer)</p>
+                  </div>
+                </div>
+
+                {/* 1-Click WhatsApp Report Box */}
+                <div className="bg-white p-6 sm:p-7 rounded-2xl border border-emerald-200 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        <h3 className="text-base font-bold text-slate-900">
+                          Template Rekap WhatsApp untuk Klien ({recapData.coupleName})
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Teks di bawah ini sudah diformat rapi dengan bullet point WhatsApp dan estimasi katering.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyWaReport}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                    >
+                      <span>{copiedWaReport ? '✓ Laporan Tersalin!' : '📋 Salin Rekap WhatsApp (1-Klik)'}</span>
+                    </button>
+                  </div>
+
+                  <div className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs max-h-56 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+                    {recapData.waReportText}
+                  </div>
+                </div>
+
+                {/* Detailed RSVP Table */}
+                <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 className="text-base font-bold text-slate-900">
+                      Daftar Respons &amp; Buku Tamu ({filteredEntries.length})
+                    </h3>
+
+                    {/* Filter Pills */}
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg self-start">
+                      <button
+                        onClick={() => setTableFilter('all')}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          tableFilter === 'all'
+                            ? 'bg-white text-slate-900 shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Semua ({recapData.totalEntries})
+                      </button>
+                      <button
+                        onClick={() => setTableFilter('hadir')}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          tableFilter === 'hadir'
+                            ? 'bg-white text-emerald-700 shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Hadir ({recapData.totalHadir})
+                      </button>
+                      <button
+                        onClick={() => setTableFilter('tidak')}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          tableFilter === 'tidak'
+                            ? 'bg-white text-slate-700 shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Berhalangan ({recapData.totalTidakHadir})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div className="overflow-x-auto border border-slate-200/80 rounded-xl">
+                    <table className="w-full text-left text-xs sm:text-sm">
+                      <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                        <tr>
+                          <th className="py-3 px-4">Nama Tamu</th>
+                          <th className="py-3 px-4">Kehadiran</th>
+                          <th className="py-3 px-4">Ucapan &amp; Doa</th>
+                          <th className="py-3 px-4">Waktu</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredEntries.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="py-6 text-center text-slate-400">
+                              Tidak ada entri untuk filter ini
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredEntries.map((entry, idx) => {
+                            const isHadir = (entry.kehadiran || '').toLowerCase() === 'hadir';
+                            return (
+                              <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                                  {entry.nama_tamu}
+                                </td>
+                                <td className="py-3 px-4 whitespace-nowrap">
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      isHadir
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : 'bg-slate-100 text-slate-600'
+                                    }`}
+                                  >
+                                    {isHadir ? '✓ Hadir' : '✕ Tidak Hadir'}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-600 max-w-xs sm:max-w-md truncate">
+                                  {entry.pesan || '-'}
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 text-xs whitespace-nowrap">
+                                  {entry.timestamp || '-'}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

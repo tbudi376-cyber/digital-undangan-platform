@@ -6,45 +6,25 @@ import { Toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import type { RsvpPayload } from "@/types";
 
-// ---------------------------------------------------------------------------
-// RsvpForm — RSVP Form with Optimistic UI
-// ---------------------------------------------------------------------------
-// When the user submits:
-//   1. IMMEDIATELY: clear the form, add entry to the guestbook list,
-//      and show a success toast ("Pesan terkirim!")
-//   2. BACKGROUND: execute the actual fetch POST to Google Apps Script
-//   3. ON FAILURE: show an error toast (but don't remove the entry —
-//      the user already saw it)
-//
-// This makes the app feel instant despite GAS taking 1-3 seconds to respond.
-// ---------------------------------------------------------------------------
-
 interface RsvpFormProps {
-  /** Wedding slug for tagging RSVP entries */
   slug: string;
-  /** Visual variant to match the active theme */
-  variant?: "elegant" | "rustic";
+  guestName?: string;
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  onRsvpSuccess?: (entry: { nama_tamu: string; kehadiran: "Hadir" | "Tidak Hadir"; pesan: string; timestamp: string }) => void;
 }
 
-interface GuestbookEntry {
-  id: string;
-  nama_tamu: string;
-  kehadiran: "Hadir" | "Tidak Hadir";
-  pesan: string;
-  timestamp: string;
-}
-
-export function RsvpForm({ slug, variant = "elegant" }: RsvpFormProps) {
-  // Form state
-  const [nama, setNama] = useState("");
+export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }: RsvpFormProps) {
+  const [prevGuestName, setPrevGuestName] = useState(guestName);
+  const [nama, setNama] = useState(guestName || "");
   const [kehadiran, setKehadiran] = useState<"Hadir" | "Tidak Hadir">("Hadir");
   const [pesan, setPesan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Guestbook (optimistic entries)
-  const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
+  if (guestName !== prevGuestName) {
+    setPrevGuestName(guestName);
+    setNama(guestName || "");
+  }
 
-  // Toast state
   const [toast, setToast] = useState<{
     message: string;
     variant: "success" | "error";
@@ -59,16 +39,45 @@ export function RsvpForm({ slug, variant = "elegant" }: RsvpFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanNama = nama.trim();
+    const cleanPesan = pesan.trim();
+    if (!cleanNama || !cleanPesan || isSubmitting) return;
 
-    if (!nama.trim() || !pesan.trim()) return;
+    if (cleanPesan.length > 500) {
+      showToast("Pesan terlalu panjang (maksimal 500 karakter)", "error");
+      return;
+    }
 
-    // Capture current values before clearing
-    const entry: GuestbookEntry = {
-      id: crypto.randomUUID(),
-      nama_tamu: nama.trim(),
+    // Q3: Anti-Spam Cooldown (10 menit) via localStorage
+    try {
+      const storageKey = `temu_rsvp_${slug}`;
+      const lastSubmitTime = localStorage.getItem(storageKey);
+      if (lastSubmitTime) {
+        const elapsed = Date.now() - parseInt(lastSubmitTime, 10);
+        const cooldownMs = 10 * 60 * 1000; // 10 menit
+        if (elapsed < cooldownMs) {
+          const remainingMin = Math.ceil((cooldownMs - elapsed) / 60000);
+          const confirmResubmit = window.confirm(
+            `Anda baru saja mengirimkan ucapan beberapa saat yang lalu (${remainingMin} menit tersisa pada jeda kirim). Apakah Anda ingin mengirimkan ucapan tambahan?`
+          );
+          if (!confirmResubmit) {
+            return;
+          }
+        }
+      }
+    } catch {
+      // Ignore localStorage security/sandbox errors
+    }
+
+    const entry = {
+      nama_tamu: cleanNama,
       kehadiran,
-      pesan: pesan.trim(),
-      timestamp: new Date().toLocaleString("id-ID"),
+      pesan: cleanPesan,
+      timestamp: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
     };
 
     const payload: RsvpPayload = {
@@ -78,53 +87,80 @@ export function RsvpForm({ slug, variant = "elegant" }: RsvpFormProps) {
       pesan: entry.pesan,
     };
 
-    // ── Step 1: Optimistic update (instant) ──
-    setGuestbook((prev) => [entry, ...prev]);
-    setNama("");
+    // Optimistic UI update
+    if (onRsvpSuccess) {
+      onRsvpSuccess(entry);
+    }
     setPesan("");
-    setKehadiran("Hadir");
-    showToast("Pesan terkirim! ✨");
+    showToast("Doa & ucapan Anda terkirim! ✨");
     setIsSubmitting(true);
 
-    // ── Step 2: Background POST to GAS ──
     try {
       const success = await submitRsvp(payload);
       if (!success) {
-        showToast("Gagal mengirim pesan, coba lagi nanti", "error");
+        showToast("Gagal mengirim ke server, coba lagi nanti", "error");
+      } else {
+        try {
+          localStorage.setItem(`temu_rsvp_${slug}`, Date.now().toString());
+        } catch {
+          // Ignore
+        }
       }
     } catch {
-      showToast("Terjadi kesalahan jaringan", "error");
+      showToast("Terjadi kendala jaringan", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Theme-adaptive styles
   const isRustic = variant === "rustic";
-  const accentColor = isRustic ? "green" : "rose";
+  const isMinimalist = variant === "minimalist";
+  const isPastel = variant === "pastel";
 
   return (
-    <div>
-      {/* ── Form ──────────────────────────────────────────────────── */}
+    <div className="w-full max-w-lg mx-auto">
       <form
         onSubmit={handleSubmit}
         className={cn(
-          "p-6 md:p-8 rounded-3xl border backdrop-blur-sm",
-          isRustic
-            ? "bg-white/50 border-green-200/40"
-            : "bg-white/60 border-rose-200/40"
+          "p-6 md:p-8 transition-all shadow-sm",
+          isPastel
+            ? "bg-[#15102a]/80 border border-purple-800/40 text-slate-100 rounded-3xl backdrop-blur-md"
+            : isRustic
+            ? "bg-[#F8F5EE] border-2 border-[#2E4A3D]/25 border-dashed rounded-3xl text-stone-800 shadow-[0_10px_30px_rgba(46,74,61,0.06)]"
+            : isMinimalist
+            ? "bg-white border border-black/15 rounded-none text-black p-6 sm:p-8"
+            : "bg-[#FDFBF7] border border-[#D4AF37]/50 rounded-3xl text-[#3A0A13] shadow-[0_12px_40px_rgba(107,23,40,0.08)]"
         )}
       >
-        {/* Name field */}
-        <div className="mb-5">
+        <h3
+          className={cn(
+            "text-xl font-bold text-center mb-6",
+            isMinimalist
+              ? "font-mono uppercase tracking-[0.2em] text-sm text-black"
+              : isRustic
+              ? "font-serif text-[#2E4A3D]"
+              : "font-serif text-[#6B1728]"
+          )}
+        >
+          Konfirmasi Kehadiran &amp; Doa Restu
+        </h3>
+
+        {/* Nama Tamu */}
+        <div className="mb-5 text-left">
           <label
             htmlFor="rsvp-nama"
             className={cn(
-              "block text-sm font-medium mb-2",
-              isRustic ? "text-stone-600" : "text-gray-600"
+              "block text-xs font-semibold uppercase tracking-wider mb-2",
+              isPastel
+                ? "text-purple-200"
+                : isRustic
+                ? "text-[#2E4A3D] font-serif"
+                : isMinimalist
+                ? "text-zinc-600 font-mono text-[10px] tracking-widest"
+                : "text-[#6B1728] font-medium"
             )}
           >
-            Nama Anda
+            Nama Tamu
           </label>
           <input
             id="rsvp-nama"
@@ -132,193 +168,145 @@ export function RsvpForm({ slug, variant = "elegant" }: RsvpFormProps) {
             value={nama}
             onChange={(e) => setNama(e.target.value)}
             required
-            placeholder="Masukkan nama lengkap"
+            placeholder="Masukkan nama Anda"
             className={cn(
-              "w-full px-4 py-3 rounded-xl border bg-white/80 outline-none transition-all duration-200",
-              "placeholder:text-gray-300 text-gray-700",
-              isRustic
-                ? "border-green-200/50 focus:border-green-400 focus:ring-2 focus:ring-green-400/20"
-                : "border-rose-200/50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+              "w-full px-4 py-3 border outline-none transition-all duration-200 text-sm",
+              isPastel
+                ? "bg-purple-950/40 border-purple-800/60 text-white placeholder:text-purple-300/40 focus:border-purple-400 rounded-xl"
+                : isRustic
+                ? "bg-white border-[#2E4A3D]/25 text-stone-800 placeholder:text-stone-400 focus:border-[#2E4A3D] rounded-xl"
+                : isMinimalist
+                ? "bg-zinc-50 border border-black/20 text-black placeholder:text-zinc-400 focus:border-black rounded-none font-sans"
+                : "bg-white border-[#D4AF37]/40 text-[#450F1B] placeholder:text-stone-400 focus:border-[#AA7C11] rounded-xl"
             )}
           />
         </div>
 
-        {/* Attendance radio */}
-        <div className="mb-5">
+        {/* Kehadiran */}
+        <div className="mb-5 text-left">
           <label
             className={cn(
-              "block text-sm font-medium mb-3",
-              isRustic ? "text-stone-600" : "text-gray-600"
+              "block text-xs font-semibold uppercase tracking-wider mb-2",
+              isPastel
+                ? "text-purple-200"
+                : isRustic
+                ? "text-[#2E4A3D] font-serif"
+                : isMinimalist
+                ? "text-zinc-600 font-mono text-[10px] tracking-widest"
+                : "text-[#6B1728] font-medium"
             )}
           >
-            Kehadiran
+            Konfirmasi Kehadiran
           </label>
-          <div className="flex gap-4">
-            {(["Hadir", "Tidak Hadir"] as const).map((option) => (
-              <label
-                key={option}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-200",
-                  kehadiran === option
-                    ? isRustic
-                      ? "bg-green-50 border-green-400 text-green-700 shadow-sm"
-                      : "bg-rose-50 border-rose-400 text-rose-700 shadow-sm"
-                    : "bg-white/60 border-gray-200 text-gray-500 hover:border-gray-300"
-                )}
-              >
-                <input
-                  type="radio"
-                  name="kehadiran"
-                  value={option}
-                  checked={kehadiran === option}
-                  onChange={() => setKehadiran(option)}
-                  className="sr-only"
-                />
-                <span className="text-sm font-medium">
-                  {option === "Hadir" ? "✅ Hadir" : "❌ Tidak Hadir"}
-                </span>
-              </label>
-            ))}
+          <div className="grid grid-cols-2 gap-3">
+            {(["Hadir", "Tidak Hadir"] as const).map((option) => {
+              const selected = kehadiran === option;
+              return (
+                <label
+                  key={option}
+                  className={cn(
+                    "flex items-center justify-center gap-2 py-3 px-3 border text-xs font-semibold cursor-pointer transition-all select-none",
+                    selected
+                      ? isPastel
+                        ? "bg-purple-600 border-purple-400 text-white shadow-md shadow-purple-900/40 rounded-xl"
+                        : isRustic
+                        ? "bg-[#2E4A3D] border-[#2E4A3D] text-[#F8F5EE] shadow-md shadow-stone-800/20 rounded-xl"
+                        : isMinimalist
+                        ? "bg-black border-black text-white shadow-none rounded-none font-mono text-[11px]"
+                        : "bg-[#6B1728] border-[#D4AF37] text-[#F3E5AB] shadow-md shadow-[#6B1728]/30 rounded-xl"
+                      : isPastel
+                      ? "bg-purple-950/20 border-purple-800/40 text-purple-200/70 hover:border-purple-700 rounded-xl"
+                      : isRustic
+                      ? "bg-white/70 border-[#2E4A3D]/20 text-stone-700 hover:border-[#2E4A3D]/40 rounded-xl"
+                      : isMinimalist
+                      ? "bg-zinc-50 border-black/15 text-zinc-600 hover:border-black/30 rounded-none font-mono text-[11px]"
+                      : "bg-white/70 border-[#D4AF37]/30 text-stone-700 hover:border-[#D4AF37]/60 rounded-xl"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="kehadiran"
+                    value={option}
+                    checked={selected}
+                    onChange={() => setKehadiran(option)}
+                    className="sr-only"
+                  />
+                  <span>{option === "Hadir" ? "✓ Hadir" : "✕ Tidak Hadir"}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
 
-        {/* Message textarea */}
-        <div className="mb-6">
-          <label
-            htmlFor="rsvp-pesan"
-            className={cn(
-              "block text-sm font-medium mb-2",
-              isRustic ? "text-stone-600" : "text-gray-600"
-            )}
-          >
-            Ucapan & Doa
-          </label>
+        {/* Pesan & Doa */}
+        <div className="mb-6 text-left">
+          <div className="flex justify-between items-center mb-2">
+            <label
+              htmlFor="rsvp-pesan"
+              className={cn(
+                "block text-xs font-semibold uppercase tracking-wider",
+                isPastel
+                  ? "text-purple-200"
+                  : isRustic
+                  ? "text-[#2E4A3D] font-serif"
+                  : isMinimalist
+                  ? "text-zinc-600 font-mono text-[10px] tracking-widest"
+                : "text-[#6B1728] font-medium"
+              )}
+            >
+              Ucapan &amp; Doa Restu
+            </label>
+            <span
+              className={cn(
+                "text-[10px]",
+                pesan.length > 450 ? "text-amber-500 font-medium" : "text-gray-400"
+              )}
+            >
+              {pesan.length}/500
+            </span>
+          </div>
           <textarea
             id="rsvp-pesan"
             value={pesan}
             onChange={(e) => setPesan(e.target.value)}
             required
+            maxLength={500}
             rows={3}
-            placeholder="Tulis ucapan dan doa untuk mempelai..."
+            placeholder="Tuliskan ucapan selamat & doa untuk kedua mempelai..."
             className={cn(
-              "w-full px-4 py-3 rounded-xl border bg-white/80 outline-none transition-all duration-200 resize-none",
-              "placeholder:text-gray-300 text-gray-700",
-              isRustic
-                ? "border-green-200/50 focus:border-green-400 focus:ring-2 focus:ring-green-400/20"
-                : "border-rose-200/50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+              "w-full px-4 py-3 border outline-none transition-all duration-200 resize-none text-sm",
+              isPastel
+                ? "bg-purple-950/40 border-purple-800/60 text-white placeholder:text-purple-300/40 focus:border-purple-400 rounded-xl"
+                : isRustic
+                ? "bg-white border-[#2E4A3D]/25 text-stone-800 placeholder:text-stone-400 focus:border-[#2E4A3D] rounded-xl font-serif"
+                : isMinimalist
+                ? "bg-zinc-50 border border-black/20 text-black placeholder:text-zinc-400 focus:border-black rounded-none font-sans"
+                : "bg-white border-[#D4AF37]/40 text-[#450F1B] placeholder:text-stone-400 focus:border-[#AA7C11] rounded-xl"
             )}
           />
         </div>
 
-        {/* Submit button */}
+        {/* Tombol Kirim */}
         <button
           type="submit"
           disabled={isSubmitting || !nama.trim() || !pesan.trim()}
           className={cn(
-            "w-full py-3.5 rounded-xl font-medium text-white transition-all duration-200",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            "shadow-lg active:scale-[0.98]",
-            isRustic
-              ? `bg-green-600 hover:bg-green-700 shadow-green-600/25`
-              : `bg-rose-500 hover:bg-rose-600 shadow-rose-500/25`
+            "w-full py-3.5 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-[0.99] cursor-pointer text-sm",
+            isPastel
+              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-700/30 text-white rounded-xl"
+              : isRustic
+              ? "bg-[#2E4A3D] hover:bg-[#243B30] text-[#F8F5EE] shadow-stone-800/20 rounded-xl font-serif tracking-wider"
+              : isMinimalist
+              ? "bg-black hover:bg-zinc-800 text-white shadow-none rounded-none font-mono uppercase tracking-[0.2em] text-xs"
+              : "bg-gradient-to-r from-[#6B1728] via-[#851C32] to-[#6B1728] text-[#F3E5AB] border border-[#D4AF37]/60 shadow-[0_8px_25px_rgba(107,23,40,0.4)] hover:brightness-105 rounded-xl font-serif tracking-wider"
           )}
         >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg
-                className="animate-spin h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              Mengirim...
-            </span>
-          ) : (
-            "Kirim Ucapan 💌"
-          )}
+          {isSubmitting ? "Mengirimkan Doa..." : "Kirim Ucapan & Konfirmasi 💌"}
         </button>
       </form>
 
-      {/* ── Guestbook (Optimistic Entries) ────────────────────────── */}
-      {guestbook.length > 0 && (
-        <div className="mt-10">
-          <h3
-            className={cn(
-              "text-center text-sm tracking-[0.2em] uppercase mb-6 font-light",
-              isRustic ? "text-green-600/70" : "text-rose-400"
-            )}
-          >
-            Ucapan Tamu
-          </h3>
-
-          <div className="space-y-4">
-            {guestbook.map((entry) => (
-              <div
-                key={entry.id}
-                className={cn(
-                  "p-4 rounded-2xl border backdrop-blur-sm animate-fade-in-up",
-                  isRustic
-                    ? "bg-white/40 border-green-200/30"
-                    : "bg-white/50 border-rose-200/30"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span
-                    className={cn(
-                      "font-semibold text-sm",
-                      isRustic ? "text-stone-700" : "text-gray-700"
-                    )}
-                  >
-                    {entry.nama_tamu}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-xs px-2 py-0.5 rounded-full",
-                      entry.kehadiran === "Hadir"
-                        ? isRustic
-                          ? "bg-green-100 text-green-700"
-                          : "bg-rose-100 text-rose-600"
-                        : "bg-gray-100 text-gray-500"
-                    )}
-                  >
-                    {entry.kehadiran}
-                  </span>
-                </div>
-                <p
-                  className={cn(
-                    "text-sm leading-relaxed",
-                    isRustic ? "text-stone-600" : "text-gray-600"
-                  )}
-                >
-                  {entry.pesan}
-                </p>
-                <p className="text-xs text-gray-400 mt-2">{entry.timestamp}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Toast ─────────────────────────────────────────────────── */}
       {toast && (
-        <Toast
-          message={toast.message}
-          variant={toast.variant}
-          onClose={() => setToast(null)}
-        />
+        <Toast message={toast.message} variant={toast.variant} onClose={() => setToast(null)} />
       )}
     </div>
   );

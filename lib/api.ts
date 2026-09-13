@@ -37,8 +37,9 @@ const DEMO_CLIENT_DATA: ClientData = {
   qris_image: "",
   gallery_images:
     "https://res.cloudinary.com/cludinarypartnerinaja/image/upload/kekawinan/images/gallery/image-5eM0h5iee7mz6qHGY_vUj-1749993442062.png, https://res.cloudinary.com/cludinarypartnerinaja/image/upload/kekawinan/images/gallery/image-4QvHbharHj8KfMXT6txr2-1749993459099.png, https://res.cloudinary.com/cludinarypartnerinaja/image/upload/kekawinan/images/gallery/image-Ep9GWXyi1YGyWWnBrOqRt-1749993450703.png, https://res.cloudinary.com/cludinarypartnerinaja/image/upload/kekawinan/images/gallery/image-ALdU97qKjABV-cA1ywjrD-1749993466499.png",
-  quote: "Lalu Dia menjadikan darinya sepasang laki-laki dan perempuan.",
-  quote_source: "Q.S Al-Qiyamah: 39",
+  quote: "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang.",
+  quote_source: "Q.S Ar-Rum: 21",
+  stream_link: "https://youtube.com/live/demo",
   physical_gift_address: "Jl. Salemba Raya No. 12, Jakarta Pusat, DKI Jakarta 10455",
   physical_gift_recipient: "Anton & Desti",
   physical_gift_phone: "0857-7772-1212",
@@ -56,14 +57,21 @@ const DEMO_CLIENT_DATA: ClientData = {
  * @returns ClientData object or null if not found / error
  */
 export async function getClientData(
-  slug: string
+  slug: string,
+  isPreview: boolean = false
 ): Promise<ClientData | null> {
+  if (!GAS_URL || slug === "romeo-juliet" || slug === "demo") {
+    return DEMO_CLIENT_DATA;
+  }
+
   try {
     const url = `${GAS_URL}?slug=${encodeURIComponent(slug)}`;
 
-    const res = await fetch(url, {
-      next: { revalidate: 300 }, // ISR: cache for 5 minutes
-    });
+    const fetchOptions: RequestInit = isPreview
+      ? { cache: "no-store" } // Bypass ISR cache for instant client preview
+      : { next: { revalidate: 300 } }; // ISR: cache for 5 minutes
+
+    const res = await fetch(url, fetchOptions);
 
     if (!res.ok) {
       if (slug === "romeo-juliet" || slug === "demo") {
@@ -101,26 +109,60 @@ export async function getClientData(
 
 /**
  * Fetch guestbook (RSVP) messages by slug from Google Apps Script.
- * Uses ISR with `next: { revalidate: 60 }` (1 minute).
+ * Uses ISR with `next: { revalidate: 60 }` (1 minute), or `cache: 'no-store'` if isPreview.
  */
-export async function getGuestbook(slug: string): Promise<RsvpEntry[]> {
+const DEMO_GUESTBOOK: RsvpEntry[] = [
+  {
+    slug: "romeo-juliet",
+    nama_tamu: "Budi Santoso & Keluarga",
+    kehadiran: "Hadir",
+    pesan: "Selamat berbahagia Anton & Desti! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Aamiin.",
+    timestamp: "12 September 2026",
+  },
+  {
+    slug: "romeo-juliet",
+    nama_tamu: "Siti Rahma",
+    kehadiran: "Hadir",
+    pesan: "Barakallahu lakum wa baraka alaikum! Happy wedding bestie, lancar sampai hari H yaa! ✨",
+    timestamp: "12 September 2026",
+  },
+  {
+    slug: "romeo-juliet",
+    nama_tamu: "Dimas Pratama",
+    kehadiran: "Hadir",
+    pesan: "Selamat menempuh hidup baru bro Anton! Doa terbaik untuk kalian berdua.",
+    timestamp: "11 September 2026",
+  },
+];
+
+export async function getGuestbook(
+  slug: string,
+  isPreview: boolean = false
+): Promise<RsvpEntry[]> {
+  if (!GAS_URL || slug === "romeo-juliet" || slug === "demo") {
+    return DEMO_GUESTBOOK;
+  }
+
   try {
     const url = `${GAS_URL}?slug=${encodeURIComponent(slug)}&action=guestbook`;
-    const res = await fetch(url, {
-      next: { revalidate: 60 },
-    });
+    const fetchOptions: RequestInit = isPreview
+      ? { cache: "no-store" }
+      : { next: { revalidate: 60 } };
+
+    const res = await fetch(url, fetchOptions);
 
     if (!res.ok) {
       console.error(`[getGuestbook] HTTP error: ${res.status}`);
-      return [];
+      return slug === "romeo-juliet" || slug === "demo" ? DEMO_GUESTBOOK : [];
     }
 
     const json: GASResponse<RsvpEntry[]> = await res.json();
     if (json.status === "success" && json.data) {
       return json.data;
     }
-    return [];
+    return slug === "romeo-juliet" || slug === "demo" ? DEMO_GUESTBOOK : [];
   } catch (error) {
+    if (slug === "romeo-juliet" || slug === "demo") return DEMO_GUESTBOOK;
     console.error(`[getGuestbook] Fetch failed for slug "${slug}":`, error);
     return [];
   }

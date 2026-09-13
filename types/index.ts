@@ -1,39 +1,39 @@
 // ============================================================
-// Digital Wedding Invitation Platform — Type Definitions
+// Temu Waktu — Type Definitions
 // ============================================================
 
 /**
- * Client data from the "DataKlien" Google Sheets tab.
- * Each row represents one wedding invitation client.
- *
- * All fields are `string` because Google Sheets data
- * transmitted via JSON (Apps Script) is always serialized as strings.
- *
- * Column order must match the Google Sheets tab exactly:
- * A=slug, B=theme, C=hero_image, D=music_url, E=bride_full_name, ...
+ * Data Klien dari tab "DataKlien" Google Sheets.
+ * Setiap baris merepresentasikan satu Klien pernikahan.
  */
 export interface ClientData {
-  // ── Data Dasar ──────────────────────────────────────────────
-  /** URL unik undangan, huruf kecil tanpa spasi (contoh: "andi-nina") */
+  // ── Data Dasar (A-D) ─────────────────────────────────────────
+  /** URL unik undangan, huruf kecil tanpa spasi (contoh: "desti-anton") */
   slug: string;
-  /** ID tema undangan: "elegant", "rustic", dll. */
+  /** ID tema undangan: "elegant", "rustic", "minimalist", "theme9", "pastel", "conservatory" */
   theme: string;
-  /** URL foto cover utama dari Google Drive */
+  /** URL foto cover utama / hero (Google Drive / Cloudinary / direct link) */
   hero_image: string;
-  /** URL file MP3 backsound dari Google Drive */
+  /** URL file MP3 atau link YouTube untuk lagu latar */
   music_url: string;
+  /** Judul lagu pengantin opsional */
+  music_title?: string;
 
-  // ── Profil Mempelai ─────────────────────────────────────────
-  /** Nama lengkap mempelai wanita (contoh: "Nina Sari Dewi") */
+  // ── Profil Mempelai & Keluarga (E-J) ──────────────────────────
+  /** Nama lengkap mempelai wanita (contoh: "Desti Angraeny, S.Ked") */
   bride_full_name: string;
-  /** Nama panggilan mempelai wanita (contoh: "Nina") */
+  /** Nama panggilan mempelai wanita (contoh: "Desti") */
   bride_nickname: string;
-  /** Nama lengkap mempelai pria (contoh: "Andi Pratama") */
+  /** Nama lengkap mempelai pria (contoh: "Antonio Putra, S.T") */
   groom_full_name: string;
-  /** Nama panggilan mempelai pria (contoh: "Andi") */
+  /** Nama panggilan mempelai pria (contoh: "Anton") */
   groom_nickname: string;
+  /** Keterangan orang tua mempelai wanita */
+  bride_parents?: string;
+  /** Keterangan orang tua mempelai pria */
+  groom_parents?: string;
 
-  // ── Akad ────────────────────────────────────────────────────
+  // ── Akad Nikah (K-N) ──────────────────────────────────────────
   /** Tanggal akad, format YYYY-MM-DD (contoh: "2026-12-31") */
   akad_date: string;
   /** Waktu akad (contoh: "08:00 - 10:00 WIB") */
@@ -43,7 +43,7 @@ export interface ClientData {
   /** URL Google Maps lokasi akad */
   akad_map_url: string;
 
-  // ── Resepsi ─────────────────────────────────────────────────
+  // ── Resepsi (O-R) ─────────────────────────────────────────────
   /** Tanggal resepsi, format YYYY-MM-DD */
   resepsi_date: string;
   /** Waktu resepsi (contoh: "11:00 - 14:00 WIB") */
@@ -53,41 +53,37 @@ export interface ClientData {
   /** URL Google Maps lokasi resepsi */
   resepsi_map_url: string;
 
-  // ── Amplop Digital ──────────────────────────────────────────
+  // ── Amplop Digital (S-V) ──────────────────────────────────────
   /** Nama bank untuk transfer hadiah (contoh: "BCA") */
   bank_name: string;
   /** Nomor rekening (contoh: "1234567890") */
   bank_account: string;
   /** Nama pemilik rekening */
   account_owner: string;
-  /** URL gambar QRIS dari Google Drive */
+  /** URL gambar QRIS */
   qris_image: string;
 
-  // ── Galeri ──────────────────────────────────────────────────
-  /** URL foto galeri dari Google Drive, dipisahkan koma (contoh: "url1, url2, url3") */
-  gallery_images: string;
-
-  // ── Data Tambahan Opsional (Tema Lanjutan) ────────────────────
-  /** Keterangan orang tua mempelai wanita */
-  bride_parents?: string;
-  /** Keterangan orang tua mempelai pria */
-  groom_parents?: string;
-  /** Kutipan ayat / kata mutiara */
-  quote?: string;
-  /** Sumber kutipan ayat (contoh: "Q.S Al-Qiyamah: 39") */
-  quote_source?: string;
-  /** Link streaming online / YouTube / Zoom */
-  stream_link?: string;
+  // ── Kado Fisik (W-Y) ──────────────────────────────────────────
   /** Alamat pengiriman kado fisik */
   physical_gift_address?: string;
-  /** Penerima kado fisik */
+  /** Nama penerima paket kado */
   physical_gift_recipient?: string;
-  /** Nomor telepon penerima kado fisik */
+  /** Nomor telepon penerima paket kado */
   physical_gift_phone?: string;
+
+  // ── Galeri & Konten Tambahan (Z-AC) ───────────────────────────
+  /** URL foto galeri dipisahkan koma */
+  gallery_images: string;
+  /** Kutipan ayat atau mutiara romantis */
+  quote?: string;
+  /** Sumber kutipan (contoh: "Q.S Ar-Rum: 21") */
+  quote_source?: string;
+  /** Link live streaming pernikahan (YouTube/Zoom/dll) */
+  stream_link?: string;
 }
 
 /**
- * A single RSVP entry from the "RSVP" Google Sheets tab.
+ * Data satu pesan/doa dari tab "RSVP" Google Sheets.
  */
 export interface RsvpEntry {
   slug: string;
@@ -98,8 +94,7 @@ export interface RsvpEntry {
 }
 
 /**
- * Payload sent via POST to Google Apps Script
- * when a guest submits the RSVP form.
+ * Payload pengiriman form RSVP dari Tamu ke Google Apps Script.
  */
 export interface RsvpPayload {
   slug: string;
@@ -109,8 +104,7 @@ export interface RsvpPayload {
 }
 
 /**
- * Generic response wrapper from Google Apps Script Web App.
- * T is the data type returned on success.
+ * Pembungkus respons generic dari Google Apps Script Web App.
  */
 export interface GASResponse<T = unknown> {
   status: "success" | "error";

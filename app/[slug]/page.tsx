@@ -56,9 +56,13 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   const resolvedSearchParams = await searchParams;
   const to = resolvedSearchParams?.to;
   const guestName = typeof to === "string" ? to : Array.isArray(to) ? to[0] : undefined;
+  
+  // Q2: Instant Preview mode (?preview=true or ?preview=1) bypasses 5-min ISR cache
+  const isPreview = resolvedSearchParams?.preview === "true" || resolvedSearchParams?.preview === "1";
+
   const [clientData, guestbookData] = await Promise.all([
-    getClientData(slug),
-    getGuestbook(slug)
+    getClientData(slug, isPreview),
+    getGuestbook(slug, isPreview)
   ]);
 
   if (!clientData) {
@@ -71,5 +75,18 @@ export default async function InvitationPage({ params, searchParams }: PageProps
     clientData.theme = themeOverride;
   }
 
-  return <ThemeRenderer data={clientData} guestName={guestName} guestbook={guestbookData} />;
+  return (
+    <>
+      {isPreview && (
+        <aside
+          aria-label="Status Mode Preview"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-amber-500/95 text-slate-950 font-medium px-4 py-1.5 rounded-full shadow-lg text-xs backdrop-blur-md flex items-center gap-2 border border-amber-300 pointer-events-auto select-none"
+        >
+          <span className="w-2 h-2 rounded-full bg-slate-950 animate-pulse" />
+          <span>Mode Preview Instan (Cache 5 menit dinonaktifkan)</span>
+        </aside>
+      )}
+      <ThemeRenderer data={clientData} guestName={guestName} guestbook={guestbookData} />
+    </>
+  );
 }

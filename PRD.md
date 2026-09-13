@@ -133,13 +133,15 @@ graph TD
 | Kategori | Kolom | Tipe | Contoh | Keterangan |
 |----------|-------|------|--------|------------|
 | **Data Dasar** | `slug` | string | `andi-nina` | URL unik, huruf kecil, tanpa spasi |
-| | `theme` | string | `elegant` | ID tema (`elegant`, `rustic`, dll.) |
-| | `hero_image` | URL | `https://drive.google.com/...` | Foto cover utama dari G-Drive |
-| | `music_url` | URL | `https://drive.google.com/...` | File MP3 backsound dari G-Drive |
-| **Profil Mempelai** | `bride_full_name` | string | `Nina Sari Dewi` | Nama lengkap mempelai wanita |
+| | `theme` | string | `elegant` | ID tema (`elegant`, `rustic`, `minimalist`, `pastel`) |
+| | `hero_image` | URL | `https://drive.google.com/...` | Foto cover utama dari G-Drive / Cloudinary |
+| | `music_url` | URL | `https://drive.google.com/...` | File MP3 atau link YouTube lagu latar |
+| **Profil Mempelai & Keluarga** | `bride_full_name` | string | `Nina Sari Dewi, S.Ked` | Nama lengkap mempelai wanita |
 | | `bride_nickname` | string | `Nina` | Nama panggilan |
-| | `groom_full_name` | string | `Andi Pratama` | Nama lengkap mempelai pria |
+| | `groom_full_name` | string | `Andi Pratama, S.T` | Nama lengkap mempelai pria |
 | | `groom_nickname` | string | `Andi` | Nama panggilan |
+| | `bride_parents` | string | `Putri dari Bpk. Wijaya & Ibu Aini` | Keterangan orang tua mempelai wanita |
+| | `groom_parents` | string | `Putra dari Bpk. Anggara & Ibu Anggun` | Keterangan orang tua mempelai pria |
 | **Akad** | `akad_date` | date | `2026-12-31` | Format: YYYY-MM-DD |
 | | `akad_time` | string | `08:00 - 10:00 WIB` | Rentang waktu akad |
 | | `akad_location` | string | `Masjid Istiqlal, Jakarta` | Nama tempat akad |
@@ -152,7 +154,13 @@ graph TD
 | | `bank_account` | string | `1234567890` | Nomor rekening |
 | | `account_owner` | string | `Andi Pratama` | Nama pemilik rekening |
 | | `qris_image` | URL | `https://drive.google.com/...` | Gambar QRIS dari G-Drive |
-| **Galeri** | `gallery_images` | string | `url1, url2, url3` | URL foto G-Drive, dipisahkan koma |
+| **Kado Fisik** | `physical_gift_address` | string | `Jl. Salemba Raya No. 12, Jakarta` | Alamat pengiriman paket kado |
+| | `physical_gift_recipient` | string | `Andi & Nina` | Nama penerima paket kado |
+| | `physical_gift_phone` | string | `0857-1234-5678` | Nomor telepon penerima |
+| **Galeri & Konten Tambahan** | `gallery_images` | string | `url1, url2, url3` | URL foto G-Drive, dipisahkan koma |
+| | `quote` | string | `Dan di antara tanda-tanda...` | Kutipan ayat / kata mutiara |
+| | `quote_source` | string | `Q.S Ar-Rum: 21` | Sumber kutipan ayat |
+| | `stream_link` | URL | `https://youtube.com/live/...` | Link live streaming (YouTube/Zoom) |
 
 ### 📊 Tab: `RSVP`
 

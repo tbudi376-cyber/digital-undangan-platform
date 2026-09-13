@@ -1,255 +1,367 @@
 "use client";
 
-import type { ClientData } from "@/types";
+import { useState } from "react";
+import type { ClientData, RsvpEntry } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { DriveImage } from "@/components/ui/DriveImage";
+import { CoverScreen } from "@/components/ui/CoverScreen";
 import { RsvpForm } from "@/components/ui/RsvpForm";
 import { Countdown } from "@/components/ui/Countdown";
 import { GiftSection } from "@/components/ui/GiftSection";
-import { AudioPlayer } from "@/components/ui/AudioPlayer";
 import { Gallery } from "@/components/ui/Gallery";
 import { Guestbook } from "@/components/ui/Guestbook";
-import type { RsvpEntry } from "@/types";
+import { MapPin, Calendar, Clock, Video, Heart } from "lucide-react";
 
-// ---------------------------------------------------------------------------
-// Theme: Elegant
-// ---------------------------------------------------------------------------
-// A refined, minimal design with serif typography, soft rose & gold palette,
-// and smooth entrance animations. Suitable for formal / classic weddings.
-// ---------------------------------------------------------------------------
-
-export function ThemeElegant({ data, guestName, guestbook = [] }: { data: ClientData; guestName?: string; guestbook?: RsvpEntry[] }) {
+function RoyalFlourishDivider() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-amber-50 text-gray-800">
-      {/* ── Audio Player ────────────────────────────────────────── */}
-      {data.music_url && <AudioPlayer audioUrl={data.music_url} />}
-      {/* ── Hero / Cover Section ──────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
-        {/* Background decorative circles */}
-        <div className="absolute top-10 left-10 w-72 h-72 bg-rose-200/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl animate-pulse" />
+    <div className="flex items-center justify-center gap-3 py-6 relative z-10" aria-hidden="true">
+      <div className="h-px w-16 sm:w-28 bg-gradient-to-r from-transparent via-[#D4AF37]/80 to-[#D4AF37]" />
+      <div className="flex items-center gap-1.5 text-[#AA7C11]">
+        <span className="text-[10px]">✦</span>
+        <svg className="w-5 h-5 fill-current opacity-90" viewBox="0 0 24 24">
+          <path d="M12 2C12.5 5 15 7.5 18 8C15 8.5 12.5 11 12 14C11.5 11 9 8.5 6 8C9 7.5 11.5 5 12 2Z" />
+          <circle cx="12" cy="18" r="1.5" />
+        </svg>
+        <span className="text-[10px]">✦</span>
+      </div>
+      <div className="h-px w-16 sm:w-28 bg-gradient-to-l from-transparent via-[#D4AF37]/80 to-[#D4AF37]" />
+    </div>
+  );
+}
 
-        {/* Cover photo */}
+// ---------------------------------------------------------------------------
+// Theme: Elegant (Rose & Gold)
+// ---------------------------------------------------------------------------
+export function ThemeElegant({
+  data,
+  guestName,
+  guestbook: initialGuestbook = [],
+}: {
+  data: ClientData;
+  guestName?: string;
+  guestbook?: RsvpEntry[];
+}) {
+  const [guestbookList, setGuestbookList] = useState<RsvpEntry[]>(initialGuestbook);
+
+  const handleRsvpSuccess = (entry: { nama_tamu: string; kehadiran: "Hadir" | "Tidak Hadir"; pesan: string; timestamp: string }) => {
+    setGuestbookList((prev) => [
+      {
+        slug: data.slug,
+        nama_tamu: entry.nama_tamu,
+        kehadiran: entry.kehadiran,
+        pesan: entry.pesan,
+        timestamp: entry.timestamp,
+      },
+      ...prev,
+    ]);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] text-[#30080F] selection:bg-[#D4AF37]/30 selection:text-[#50101E] relative overflow-hidden">
+      {/* ── 1. Interactive Cover Splash Screen ────────────────────── */}
+      <CoverScreen
+        groomNickname={data.groom_nickname}
+        brideNickname={data.bride_nickname}
+        eventDate={data.akad_date}
+        guestName={guestName}
+        coverImage={data.hero_image}
+        variant="elegant"
+      />
+
+      {/* ── Archival Damask Filigree Watermark (3% opacity) ────────── */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.035] bg-repeat z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 C33 15 45 18 45 25 C45 32 36 36 30 45 C24 36 15 32 15 25 C15 18 27 15 30 5 Z M30 45 C33 52 40 55 40 58 C40 59 30 57 30 57 C30 57 20 59 20 58 C20 55 27 52 30 45 Z' fill='%236B1728' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Ambient background glow layers */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[45rem] h-[35rem] bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.12),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-96 right-0 w-[30rem] h-[30rem] bg-[radial-gradient(circle,_rgba(107,23,40,0.06),transparent_70%)] pointer-events-none" />
+
+      {/* ── 3. Hero Section ──────────────────────────────────────── */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-20 pb-20">
+        {/* Cover Photo - Parisian Arched Cameo with Dual Gold Hairline */}
         {data.hero_image && (
-          <div className="relative w-56 h-56 md:w-72 md:h-72 rounded-full overflow-hidden border-4 border-white shadow-2xl shadow-rose-200/50 mb-8 animate-fade-in">
-            <DriveImage
-              url={data.hero_image}
-              alt={`Foto ${data.groom_nickname} & ${data.bride_nickname}`}
-              fill
-              className="object-cover"
-              priority
-            />
+          <div className="relative w-64 h-84 sm:w-72 sm:h-96 rounded-t-full rounded-b-3xl overflow-hidden p-1.5 border border-[#D4AF37]/60 outline outline-1 outline-[#D4AF37]/30 outline-offset-4 shadow-[0_20px_50px_rgba(107,23,40,0.15)] bg-gradient-to-b from-[#F3E5AB]/40 via-white to-transparent mb-10 animate-fade-in">
+            <div className="relative w-full h-full rounded-t-full rounded-b-[1.3rem] overflow-hidden">
+              <DriveImage
+                url={data.hero_image}
+                alt={`Foto ${data.groom_nickname} & ${data.bride_nickname}`}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           </div>
         )}
 
-        {/* Names */}
-        <div className="text-center animate-fade-in-up relative z-10">
-          <p className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-4 font-light">
-            The Wedding of
-          </p>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold bg-gradient-to-r from-rose-700 via-rose-500 to-amber-600 bg-clip-text text-transparent leading-tight">
+        <div className="text-center animate-fade-in-up relative z-10 max-w-lg mx-auto">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="h-px w-6 bg-[#D4AF37]/60" />
+            <p className="text-[11px] tracking-[0.3em] uppercase text-[#AA7C11] font-semibold">
+              Walimatul &apos;Ursy
+            </p>
+            <span className="h-px w-6 bg-[#D4AF37]/60" />
+          </div>
+
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-[#6B1728] leading-[1.1] drop-shadow-sm">
             {data.groom_nickname}
           </h1>
-          <p className="text-3xl md:text-4xl font-serif text-amber-500 my-2">&amp;</p>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold bg-gradient-to-r from-amber-600 via-rose-500 to-rose-700 bg-clip-text text-transparent leading-tight">
+          <div className="flex items-center justify-center gap-3 my-1.5">
+            <span className="h-px w-10 bg-gradient-to-r from-transparent to-[#D4AF37]/60" />
+            <span className="text-3xl font-serif italic text-[#D4AF37]">&amp;</span>
+            <span className="h-px w-10 bg-gradient-to-l from-transparent to-[#D4AF37]/60" />
+          </div>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-[#6B1728] leading-[1.1] drop-shadow-sm">
             {data.bride_nickname}
           </h1>
-        </div>
 
-        {/* Guest Name */}
-        {guestName && (
-          <div className="mt-10 text-center animate-fade-in-up delay-200">
-            <p className="text-sm tracking-[0.2em] uppercase text-gray-500 mb-2 font-light">
-              Kepada Yth. Bapak/Ibu/Saudara/i:
-            </p>
-            <p className="text-2xl font-serif font-semibold text-gray-800 bg-white/50 backdrop-blur-sm px-6 py-2 rounded-full border border-rose-100 shadow-sm inline-block">
-              {guestName}
-            </p>
-          </div>
-        )}
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 animate-bounce">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="text-rose-300"
-          >
-            <path d="M12 5v14M19 12l-7 7-7-7" />
-          </svg>
+          {/* Quote */}
+          {data.quote && (
+            <div className="mt-10 px-6 py-6 rounded-2xl bg-[#FAF7F2]/80 border border-[#D4AF37]/30 shadow-sm max-w-md mx-auto text-center">
+              <p className="text-xs sm:text-sm italic font-serif text-stone-700 leading-relaxed">
+                &ldquo;{data.quote}&rdquo;
+              </p>
+              {data.quote_source && (
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#851C32] mt-3">
+                  — {data.quote_source}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── Event Details Section ─────────────────────────────────── */}
-      <section className="py-20 px-6">
-        <div className="max-w-lg mx-auto text-center">
-          {/* Decorative divider */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-rose-300" />
-            <span className="text-rose-400 text-2xl">✦</span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-rose-300" />
+      {/* Royal Flourish Divider */}
+      <RoyalFlourishDivider />
+
+      {/* ── 4. Couple Profile Section ────────────────────────────── */}
+      <section className="py-20 px-6 bg-[#FAF7F2] border-y border-[#D4AF37]/30 relative">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <span className="text-xs text-[#D4AF37]">✦</span>
+            <span className="text-[10px] font-semibold tracking-[0.25em] uppercase text-[#AA7C11]">
+              Groom &amp; Bride
+            </span>
+            <span className="text-xs text-[#D4AF37]">✦</span>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-serif font-semibold text-gray-800 mb-2">
-            Menuju Hari Bahagia
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#50101E] mb-3">
+            Mempelai Bahagia
           </h2>
-          
-          <Countdown targetDate={data.akad_date} variant="elegant" />
-
-          {/* Akad Nikah */}
-          <div className="mt-16 mb-12">
-            <h3 className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-2 font-light">
-              Akad Nikah
-            </h3>
-            <p className="text-2xl md:text-3xl font-serif font-semibold text-gray-800 mb-2">
-              {formatDate(data.akad_date)}
-            </p>
-            <p className="text-gray-600 mb-4">{data.akad_time}</p>
-
-            <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-2xl border border-rose-100 shadow-sm mb-6">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-rose-400"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span className="text-gray-600">{data.akad_location}</span>
-            </div>
-
-            {data.akad_map_url && (
-              <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden shadow-md border border-rose-100/50">
-                <iframe 
-                  src={data.akad_map_url} 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Resepsi */}
-          <div className="mb-12">
-            <h3 className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-2 font-light">
-              Resepsi
-            </h3>
-            <p className="text-2xl md:text-3xl font-serif font-semibold text-gray-800 mb-2">
-              {formatDate(data.resepsi_date)}
-            </p>
-            <p className="text-gray-600 mb-4">{data.resepsi_time}</p>
-
-            <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/70 backdrop-blur-sm rounded-2xl border border-rose-100 shadow-sm mb-6">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-rose-400"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span className="text-gray-600">{data.resepsi_location}</span>
-            </div>
-
-            {data.resepsi_map_url && (
-              <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden shadow-md border border-rose-100/50">
-                <iframe 
-                  src={data.resepsi_map_url} 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={true} 
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Amplop Digital Section ────────────────────────────────── */}
-      <section className="py-20 px-6 bg-rose-50/30 border-y border-rose-100/50">
-        <div className="max-w-lg mx-auto text-center">
-          <h2 className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-2 font-light">
-            Kirim Hadiah
-          </h2>
-          <p className="text-2xl md:text-3xl font-serif font-semibold text-gray-800 mb-4">
-            Amplop Digital
-          </p>
-          <p className="text-gray-500 mb-8">
-            Doa restu Anda merupakan karunia yang sangat berarti bagi kami. 
-            Dan jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless.
+          <p className="text-xs sm:text-sm font-serif italic text-stone-600 max-w-md mx-auto mb-14 leading-relaxed">
+            Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta&apos;ala, kami bermaksud mengundang
+            Bapak/Ibu/Saudara/i pada hari pernikahan kami:
           </p>
 
-          <GiftSection 
-            bankName={data.bank_name}
-            bankAccount={data.bank_account}
-            accountOwner={data.account_owner}
-            qrisImage={data.qris_image}
-            variant="elegant"
-          />
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            {/* Mempelai Pria */}
+            <div className="p-8 rounded-t-[2.5rem] rounded-b-2xl bg-white/95 border border-[#D4AF37]/40 shadow-[0_10px_30px_rgba(107,23,40,0.05)] flex flex-col justify-center transition-all hover:shadow-[0_15px_35px_rgba(212,175,55,0.15)]">
+              <span className="inline-block self-center px-4 py-1 rounded-full bg-[#6B1728]/10 border border-[#D4AF37]/40 text-[#6B1728] text-[10px] font-semibold uppercase tracking-[0.25em] mb-4">
+                Mempelai Pria
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#50101E] mb-2">
+                {data.groom_full_name}
+              </h3>
+              {data.groom_parents && (
+                <p className="text-xs text-stone-600 leading-relaxed font-light">
+                  Putra dari: <br />
+                  <span className="font-medium text-stone-800">{data.groom_parents}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Mempelai Wanita */}
+            <div className="p-8 rounded-t-[2.5rem] rounded-b-2xl bg-white/95 border border-[#D4AF37]/40 shadow-[0_10px_30px_rgba(107,23,40,0.05)] flex flex-col justify-center transition-all hover:shadow-[0_15px_35px_rgba(212,175,55,0.15)]">
+              <span className="inline-block self-center px-4 py-1 rounded-full bg-[#6B1728]/10 border border-[#D4AF37]/40 text-[#6B1728] text-[10px] font-semibold uppercase tracking-[0.25em] mb-4">
+                Mempelai Wanita
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#50101E] mb-2">
+                {data.bride_full_name}
+              </h3>
+              {data.bride_parents && (
+                <p className="text-xs text-stone-600 leading-relaxed font-light">
+                  Putri dari: <br />
+                  <span className="font-medium text-stone-800">{data.bride_parents}</span>
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Galeri Foto Section ───────────────────────────────────── */}
+      {/* Royal Flourish Divider */}
+      <RoyalFlourishDivider />
+
+      {/* ── 5. Event Details & Countdown ─────────────────────────── */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-lg">✦</span>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#50101E] mb-2">
+            Rangkaian Hari Bahagia
+          </h2>
+          <p className="text-xs text-stone-500 font-serif italic mb-6">Menghitung hari menuju ikrar suci</p>
+
+          {/* Dual-Hairline Gold Frame Countdown */}
+          <div className="inline-block max-w-full p-2 sm:p-3 rounded-3xl border border-[#D4AF37]/40 outline outline-1 outline-[#D4AF37]/20 outline-offset-4 bg-white/40 backdrop-blur-sm shadow-sm mb-6">
+            <Countdown targetDate={data.akad_date} variant="elegant" />
+          </div>
+
+          {/* Cards Akad & Resepsi */}
+          <div className="grid md:grid-cols-2 gap-6 mt-12 text-left">
+            {/* Akad Nikah */}
+            <div className="p-8 rounded-t-[2.5rem] rounded-b-2xl bg-white border border-[#D4AF37]/40 shadow-[0_12px_35px_rgba(107,23,40,0.07)] flex flex-col justify-between">
+              <div>
+                <span className="inline-block px-3.5 py-1 rounded-full bg-[#6B1728] text-[#F3E5AB] text-[10px] font-bold uppercase tracking-[0.25em] mb-5 shadow-sm">
+                  Akad Nikah
+                </span>
+                <div className="flex items-center gap-3 text-stone-800 mb-2.5">
+                  <Calendar className="w-4 h-4 text-[#851C32] shrink-0" />
+                  <p className="font-serif font-bold text-xl text-[#50101E]">
+                    {formatDate(data.akad_date)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-stone-600 mb-4 text-xs">
+                  <Clock className="w-4 h-4 text-[#851C32] shrink-0" />
+                  <p className="font-medium">{data.akad_time}</p>
+                </div>
+                <div className="flex items-start gap-3 text-stone-600 text-xs mb-6">
+                  <MapPin className="w-4 h-4 text-[#851C32] shrink-0 mt-0.5" />
+                  <p className="leading-relaxed font-light">{data.akad_location}</p>
+                </div>
+              </div>
+
+              {data.akad_map_url && (
+                <a
+                  href={data.akad_map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C5A059] text-[#450F1B] text-xs font-semibold tracking-wider transition-all hover:brightness-105 shadow-sm"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  Petunjuk Lokasi (Google Maps)
+                </a>
+              )}
+            </div>
+
+            {/* Resepsi */}
+            <div className="p-8 rounded-t-[2.5rem] rounded-b-2xl bg-white border border-[#D4AF37]/40 shadow-[0_12px_35px_rgba(107,23,40,0.07)] flex flex-col justify-between">
+              <div>
+                <span className="inline-block px-3.5 py-1 rounded-full bg-[#AA7C11] text-[#FDFBF7] text-[10px] font-bold uppercase tracking-[0.25em] mb-5 shadow-sm">
+                  Resepsi Pernikahan
+                </span>
+                <div className="flex items-center gap-3 text-stone-800 mb-2.5">
+                  <Calendar className="w-4 h-4 text-[#AA7C11] shrink-0" />
+                  <p className="font-serif font-bold text-xl text-[#50101E]">
+                    {formatDate(data.resepsi_date)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-stone-600 mb-4 text-xs">
+                  <Clock className="w-4 h-4 text-[#AA7C11] shrink-0" />
+                  <p className="font-medium">{data.resepsi_time}</p>
+                </div>
+                <div className="flex items-start gap-3 text-stone-600 text-xs mb-6">
+                  <MapPin className="w-4 h-4 text-[#AA7C11] shrink-0 mt-0.5" />
+                  <p className="leading-relaxed font-light">{data.resepsi_location}</p>
+                </div>
+              </div>
+
+              {data.resepsi_map_url && (
+                <a
+                  href={data.resepsi_map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C5A059] text-[#450F1B] text-xs font-semibold tracking-wider transition-all hover:brightness-105 shadow-sm"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  Petunjuk Lokasi (Google Maps)
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Streaming Link */}
+          {data.stream_link && (
+            <div className="mt-10">
+              <a
+                href={data.stream_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#6B1728] via-[#851C32] to-[#6B1728] text-[#F3E5AB] border border-[#D4AF37]/50 font-serif font-bold text-xs tracking-wider uppercase shadow-[0_10px_25px_rgba(107,23,40,0.3)] hover:brightness-110 transition-all"
+              >
+                <Video className="w-4 h-4 text-[#D4AF37]" />
+                Saksikan Siaran Langsung (Live Streaming)
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── 6. Gallery Section ───────────────────────────────────── */}
       {data.gallery_images && (
-        <section className="py-20 px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-2 font-light">
-              Kenangan Terindah
-            </h2>
-            <p className="text-2xl md:text-3xl font-serif font-semibold text-gray-800 mb-10">
-              Galeri Foto
+        <section className="py-20 px-6 bg-[#FAF7F2] border-y border-[#D4AF37]/30">
+          <div className="max-w-4xl mx-auto text-center mb-10">
+            <p className="text-[10px] font-semibold tracking-[0.25em] uppercase text-[#AA7C11] mb-1">
+              Visual Moments
             </p>
-            
-            <Gallery images={data.gallery_images} variant="elegant" />
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#50101E] mb-2">
+              Galeri Momen Bahagia
+            </h2>
+            <p className="text-xs font-serif italic text-stone-500">Kenangan indah langkah perjalanan cinta kami</p>
           </div>
+          <Gallery images={data.gallery_images} variant="elegant" />
         </section>
       )}
 
-      {/* ── RSVP Section ──────────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-gradient-to-b from-transparent via-rose-50/50 to-transparent">
-        <div className="max-w-lg mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-sm tracking-[0.3em] uppercase text-rose-400 mb-2 font-light">
-              Konfirmasi Kehadiran
-            </h2>
-            <p className="text-2xl md:text-3xl font-serif font-semibold text-gray-800">
-              RSVP
-            </p>
-          </div>
+      {/* ── 7. Digital Envelope / Gift Section ────────────────────── */}
+      <section className="py-20 px-6">
+        <GiftSection
+          bankName={data.bank_name}
+          bankAccount={data.bank_account}
+          accountOwner={data.account_owner}
+          qrisImage={data.qris_image}
+          physicalGiftAddress={data.physical_gift_address}
+          physicalGiftRecipient={data.physical_gift_recipient}
+          physicalGiftPhone={data.physical_gift_phone}
+          variant="elegant"
+        />
+      </section>
 
-          <RsvpForm slug={data.slug} />
-
-          <Guestbook rsvps={guestbook} variant="elegant" />
+      {/* ── 8. RSVP & Guestbook Section ──────────────────────────── */}
+      <section className="py-24 px-6 bg-[#FAF7F2] border-t border-[#D4AF37]/30">
+        <div className="max-w-xl mx-auto text-center">
+          <RsvpForm
+            slug={data.slug}
+            guestName={guestName}
+            variant="elegant"
+            onRsvpSuccess={handleRsvpSuccess}
+          />
+          <Guestbook rsvps={guestbookList} variant="elegant" />
         </div>
       </section>
 
-      {/* ── Footer ────────────────────────────────────────────────── */}
-      <footer className="py-10 text-center text-sm text-gray-400">
-        <p>
-          Made with 💕 for {data.groom_nickname} &amp; {data.bride_nickname}
+      {/* ── 9. Footer ────────────────────────────────────────────── */}
+      <footer className="py-16 px-6 text-center text-xs text-stone-400 border-t border-[#D4AF37]/30 bg-[#FDFBF7]">
+        <p className="font-serif italic text-sm text-stone-600 mb-2">
+          Terima kasih atas doa &amp; restu yang tulus
         </p>
+        <p className="font-serif text-2xl font-bold text-[#6B1728] mb-4">
+          {data.groom_nickname} &amp; {data.bride_nickname}
+        </p>
+        <div className="flex items-center justify-center gap-1.5 text-stone-400 text-[11px]">
+          <span>Dibuat dengan</span>
+          <Heart className="w-3.5 h-3.5 text-[#851C32] fill-[#851C32]" />
+          <span>oleh Temu Waktu</span>
+        </div>
       </footer>
     </div>
   );

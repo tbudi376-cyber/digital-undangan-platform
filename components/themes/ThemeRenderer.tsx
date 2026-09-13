@@ -5,6 +5,10 @@ import { ThemeElegant } from "./ThemeElegant";
 import { ThemeRustic } from "./ThemeRustic";
 import { ThemeMinimalist } from "./ThemeMinimalist";
 import { ThemeSoftPastel } from "./ThemeSoftPastel";
+import { ThemeConservatory } from "./ThemeConservatory";
+import { AtmosphereParticles } from "@/components/ui/AtmosphereParticles";
+import { WaveAudioPlayer } from "@/components/ui/WaveAudioPlayer";
+import { FloatingWishesTicker } from "@/components/ui/FloatingWishesTicker";
 import type { ComponentType } from "react";
 
 // ---------------------------------------------------------------------------
@@ -32,6 +36,8 @@ const THEME_MAP: Record<string, ComponentType<ThemeProps>> = {
   minimalist: ThemeMinimalist,
   pastel: ThemeSoftPastel,
   theme9: ThemeSoftPastel,
+  conservatory: ThemeConservatory,
+  "theme-conservatory": ThemeConservatory,
 };
 
 /**
@@ -43,5 +49,30 @@ export function ThemeRenderer({ data, guestName, guestbook = [] }: ThemeProps) {
   const themeId = data.theme?.toLowerCase().trim() || DEFAULT_THEME;
   const ThemeComponent = THEME_MAP[themeId] || THEME_MAP[DEFAULT_THEME];
 
-  return <ThemeComponent data={data} guestName={guestName} guestbook={guestbook} />;
+  return (
+    <>
+      {/* ── 1. Global Floating Ambient Particle Atmosphere ──── */}
+      <AtmosphereParticles theme={themeId} />
+
+      {/* ── 2. Active Wedding Theme Surface ─────────────────── */}
+      <ThemeComponent data={data} guestName={guestName} guestbook={guestbook} />
+
+      {/* ── 3. Global Luxury Audio Wave Equalizer Pill ──────── */}
+      {data.music_url && (
+        <WaveAudioPlayer
+          audioUrl={data.music_url}
+          theme={themeId}
+          trackTitle={data.music_title || "Canon in D — Acoustic Cello"}
+        />
+      )}
+
+      {/* ── 4. Global Floating Guest Wishes Ticker ──────────── */}
+      <FloatingWishesTicker
+        guestbook={guestbook}
+        groomNickname={data.groom_nickname}
+        brideNickname={data.bride_nickname}
+      />
+    </>
+  );
 }
+
