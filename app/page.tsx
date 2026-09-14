@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   Star,
   ExternalLink,
+  Menu,
+  X,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -34,7 +36,7 @@ const THEMES = [
     description:
       "Paviliun kaca botani interaktif. Tamu dapat mengetuk easel foto, papan agenda, peti kado, dan kotak surat RSVP di dalam pemandangan hidup yang memukau.",
     image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1587271407850-8d438ca9fdf2?q=80&w=800&auto=format&fit=crop",
     palette: "from-emerald-950/25 via-emerald-900/15 to-transparent",
     tagColor: "bg-emerald-900/10 text-emerald-800 border-emerald-300",
     buttonGrad: "bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-emerald-100",
@@ -67,7 +69,7 @@ const THEMES = [
     features: ["Handmade Paper Texture", "Olive Vine Dividers", "Deckled Edge Cards"],
   },
   {
-    id: "theme9",
+    id: "pastel",
     tag: "AURA ROMANCE",
     title: "Soft Pastel Twilight",
     description:
@@ -76,7 +78,7 @@ const THEMES = [
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=800&auto=format&fit=crop",
     palette: "from-purple-950/20 via-purple-900/10 to-transparent",
     tagColor: "bg-purple-900/10 text-purple-700 border-purple-200",
-    buttonGrad: "bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-700 text-purple-100",
+    buttonGrad: "bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-purple-100 border border-purple-400/30",
     features: ["Ambient Violet Glow", "Live Equalizer Audio", "ATM Card Replica"],
   },
   {
@@ -163,6 +165,7 @@ const FAQ_ITEMS = [
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -190,6 +193,7 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-8 text-xs font-serif tracking-wider uppercase text-stone-600">
             <Link href="#katalog" className="hover:text-[#6B1728] transition-colors">
               Katalog Desain
@@ -208,15 +212,79 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="#katalog"
-              className="px-5 py-2.5 rounded-full font-serif text-xs font-semibold tracking-wider uppercase bg-[#6B1728] text-[#F3E5AB] border border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(107,23,40,0.25)] hover:shadow-[0_6px_22px_rgba(212,175,55,0.35)] hover:brightness-105 active:scale-95 transition-all"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-serif text-[11px] sm:text-xs font-semibold tracking-wider uppercase bg-[#6B1728] text-[#F3E5AB] border border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(107,23,40,0.25)] hover:shadow-[0_6px_22px_rgba(212,175,55,0.35)] hover:brightness-105 active:scale-95 transition-all"
             >
               Pilih Tema
             </Link>
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button
+              type="button"
+              aria-label={mobileMenuOpen ? "Tutup Navigasi Menu" : "Buka Navigasi Menu"}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className="md:hidden p-2 rounded-xl text-stone-700 hover:text-[#6B1728] hover:bg-stone-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1728]"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-[#D4AF37]/20 bg-[#FDFBF7]/95 backdrop-blur-xl px-6 py-5 shadow-2xl animate-fade-in flex flex-col gap-3.5">
+            <Link
+              href="#katalog"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-serif text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-[#6B1728] py-1 transition-colors"
+            >
+              Katalog Desain
+            </Link>
+            <Link
+              href="#workflow"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-serif text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-[#6B1728] py-1 transition-colors"
+            >
+              Cara Pesan
+            </Link>
+            <Link
+              href="#fitur"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-serif text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-[#6B1728] py-1 transition-colors"
+            >
+              Fitur Unggulan
+            </Link>
+            <Link
+              href="#harga"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-serif text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-[#6B1728] py-1 transition-colors"
+            >
+              Investasi &amp; Harga
+            </Link>
+            <Link
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-serif text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-[#6B1728] py-1 transition-colors"
+            >
+              FAQ
+            </Link>
+
+            <div className="pt-3 border-t border-stone-200/60 flex flex-col gap-2.5">
+              <a
+                href={getWaLink("Halo Temu Waktu, saya ingin konsultasi pemesanan undangan digital pernikahan.")}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-serif text-xs font-semibold tracking-wider uppercase border border-[#2E4A3D]/40 text-[#2E4A3D] bg-white text-center shadow-sm"
+              >
+                <MessageCircle className="w-4 h-4 text-[#2E4A3D]" />
+                <span>Konsultasi WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* ── 2. Hero Section ──────────────────────────────────────── */}
@@ -530,7 +598,7 @@ export default function Home() {
               {[
                 "Masa aktif undangan 1 tahun penuh",
                 "Revisi teks & foto sepuasnya sampai Hari-H",
-                "Pilihan 4 tema haute-couture eksklusif",
+                "Pilihan 5 tema haute-couture eksklusif",
                 "Request lagu kenangan favorit (MP3 / YouTube)",
                 "Amplop Digital, QRIS & Alamat Kado Fisik",
                 "Galeri Foto & Momen Cinta",

@@ -64,6 +64,44 @@ export function ThemeSoftPastel({
     ]);
   };
 
+  const formatCalendarUtc = (
+    dateStr?: string,
+    timeStr?: string,
+    fallbackHour = 8,
+    isStart = true
+  ): string | null => {
+    if (!dateStr) return null;
+    const parts = dateStr.split("-").map(Number);
+    if (parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) return null;
+    const [year, month, day] = parts;
+
+    let offsetHours = 7; // Default WIB (UTC+7)
+    if (timeStr) {
+      const upper = timeStr.toUpperCase();
+      if (upper.includes("WITA")) offsetHours = 8;
+      else if (upper.includes("WIT")) offsetHours = 9;
+    }
+
+    let hour = fallbackHour;
+    let minute = 0;
+    if (timeStr) {
+      const matches = Array.from(timeStr.matchAll(/(\d{1,2})[:.](\d{2})/g));
+      if (matches.length > 0) {
+        const target =
+          !isStart && matches.length > 1 ? matches[matches.length - 1] : matches[0];
+        hour = parseInt(target[1], 10);
+        minute = parseInt(target[2], 10);
+      }
+    }
+
+    const localUtcMs = Date.UTC(year, month - 1, day, hour - offsetHours, minute, 0);
+    const d = new Date(localUtcMs);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(
+      d.getUTCHours()
+    )}${pad(d.getUTCMinutes())}00Z`;
+  };
+
   const createCalendarUrl = () => {
     const title = encodeURIComponent(
       `Pernikahan ${data.groom_nickname} & ${data.bride_nickname}`
@@ -74,8 +112,18 @@ export function ThemeSoftPastel({
       }`
     );
     const location = encodeURIComponent(data.resepsi_location || data.akad_location || "");
-    const dateStr = (data.akad_date || "20261231").replace(/-/g, "");
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${dateStr}T080000Z/${dateStr}T140000Z`;
+
+    const startUtc =
+      formatCalendarUtc(data.akad_date, data.akad_time, 8, true) || "20261231T010000Z";
+    const endUtc =
+      formatCalendarUtc(
+        data.resepsi_date || data.akad_date,
+        data.resepsi_time || data.akad_time,
+        14,
+        false
+      ) || "20261231T070000Z";
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUtc}/${endUtc}`;
   };
 
   return (
