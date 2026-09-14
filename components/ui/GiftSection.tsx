@@ -28,6 +28,7 @@ export function GiftSection({
 }: GiftSectionProps) {
   const [copiedBank, setCopiedBank] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
 
   const handleCopyBank = () => {
     if (!bankAccount) return;
@@ -57,6 +58,169 @@ export function GiftSection({
   const hasPhysical = Boolean(physicalGiftAddress);
 
   if (!hasBank && !hasQris && !hasPhysical) return null;
+
+  if (isPastel) {
+    return (
+      <div className="w-full max-w-md mx-auto p-5 sm:p-6 transition-all animate-fade-in-up text-center bg-[#140e26]/90 border border-purple-800/40 text-slate-100 rounded-3xl backdrop-blur-md shadow-xl">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <Gift className="w-5 h-5 text-purple-400" />
+          <h3 className="text-xl font-serif font-bold text-white tracking-tight">
+            Tanda Kasih
+          </h3>
+        </div>
+
+        <p className="text-xs text-slate-300 mb-6 leading-relaxed max-w-xs mx-auto">
+          Doa restu Anda merupakan karunia terindah bagi kami. Namun jika ingin memberikan tanda kasih,
+          Anda dapat menyampaikannya melalui dompet digital di bawah ini:
+        </p>
+
+        {/* Fanned Card Stack / Wallet Component */}
+        <div className="relative py-2 px-1">
+          {/* Fanned Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsWalletOpen((prev) => !prev)}
+            aria-expanded={isWalletOpen}
+            className="mb-5 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-950/80 hover:bg-purple-900 border border-purple-400/40 text-purple-200 text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
+          >
+            <CreditCard className="w-4 h-4 text-purple-300" />
+            <span>{isWalletOpen ? "Tutup Tumpukan Kartu" : "Buka Dompet Digital (Fanned Stack)"}</span>
+          </button>
+
+          {/* Cards Container */}
+          <div
+            className={cn(
+              "relative transition-all duration-500",
+              isWalletOpen
+                ? "flex flex-col gap-4"
+                : "h-64 sm:h-72 flex items-center justify-center"
+            )}
+          >
+            {/* Card 1: Bank Transfer */}
+            {hasBank && (
+              <div
+                onClick={() => {
+                  if (!isWalletOpen) setIsWalletOpen(true);
+                }}
+                className={cn(
+                  "w-full rounded-2xl p-5 text-left border transition-all duration-500 cursor-pointer",
+                  "bg-[#1c1236] border-purple-500/40 shadow-lg text-slate-100",
+                  !isWalletOpen &&
+                    "absolute top-0 left-0 right-0 z-30 transform hover:-translate-y-2 hover:rotate-0 rotate-[-2.5deg] shadow-[0_8px_30px_rgba(20,10,40,0.6)]"
+                )}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-300">
+                    Kartu Rekening Bank
+                  </span>
+                  <CreditCard className="w-4 h-4 text-purple-300 opacity-70" />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-purple-200 mb-1">
+                  {bankName}
+                </p>
+                <p className="text-xl sm:text-2xl font-mono font-medium tracking-widest text-white mb-1">
+                  {bankAccount}
+                </p>
+                <p className="text-xs text-purple-200/80 mb-4">a.n. {accountOwner}</p>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyBank();
+                  }}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all duration-300 active:scale-95 cursor-pointer shadow-sm",
+                    copiedBank
+                      ? "bg-emerald-600 text-white"
+                      : "bg-purple-900/80 hover:bg-purple-800 text-white border border-purple-400/30"
+                  )}
+                >
+                  {copiedBank ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedBank ? "Berhasil Disalin!" : "Salin No. Rekening"}
+                </button>
+              </div>
+            )}
+
+            {/* Card 2: QRIS Card */}
+            {hasQris && (
+              <div
+                onClick={() => {
+                  if (!isWalletOpen) setIsWalletOpen(true);
+                }}
+                className={cn(
+                  "w-full rounded-2xl p-5 text-left border transition-all duration-500 cursor-pointer",
+                  "bg-[#201540] border-purple-500/40 shadow-lg text-slate-100",
+                  !isWalletOpen &&
+                    "absolute top-4 left-0 right-0 z-20 transform hover:-translate-y-2 hover:rotate-0 rotate-[2.5deg] shadow-[0_8px_30px_rgba(20,10,40,0.6)]"
+                )}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-300">
+                    QRIS Pembayaran Digital
+                  </span>
+                  <Gift className="w-4 h-4 text-purple-300 opacity-70" />
+                </div>
+                <div className="relative w-44 h-44 mx-auto p-2 bg-white rounded-xl shadow-inner border border-purple-300/30 my-2">
+                  <DriveImage url={qrisImage!} alt="QRIS Code" fill className="object-contain p-2" />
+                </div>
+                <p className="text-[11px] text-center text-purple-200/70 mt-1">
+                  Pindai QRIS melalui aplikasi e-wallet atau mobile banking Anda
+                </p>
+              </div>
+            )}
+
+            {/* Card 3: Physical Gift Card */}
+            {hasPhysical && (
+              <div
+                onClick={() => {
+                  if (!isWalletOpen) setIsWalletOpen(true);
+                }}
+                className={cn(
+                  "w-full rounded-2xl p-5 text-left border transition-all duration-500 cursor-pointer",
+                  "bg-[#180f2d] border-purple-500/40 shadow-lg text-slate-100",
+                  !isWalletOpen &&
+                    "absolute top-8 left-0 right-0 z-10 transform hover:-translate-y-2 hover:rotate-0 rotate-[-1deg] shadow-[0_8px_30px_rgba(20,10,40,0.6)]"
+                )}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-300">
+                    Kirim Kado Fisik
+                  </span>
+                  <Package className="w-4 h-4 text-purple-300 opacity-70" />
+                </div>
+                <p className="text-xs font-medium leading-relaxed mb-2 text-slate-100">
+                  {physicalGiftAddress}
+                </p>
+                {(physicalGiftRecipient || physicalGiftPhone) && (
+                  <p className="text-[11px] text-purple-200/80 mb-3">
+                    Penerima: <strong className="font-semibold text-white">{physicalGiftRecipient}</strong>
+                    {physicalGiftPhone ? ` (${physicalGiftPhone})` : ""}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyAddress();
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 active:scale-95 cursor-pointer",
+                    copiedAddress
+                      ? "bg-emerald-600 text-white"
+                      : "bg-purple-900/80 hover:bg-purple-800 text-purple-100 border border-purple-400/30"
+                  )}
+                >
+                  {copiedAddress ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedAddress ? "Alamat Disalin!" : "Salin Alamat Pengiriman"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

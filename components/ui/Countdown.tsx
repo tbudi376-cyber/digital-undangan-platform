@@ -79,6 +79,55 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
     );
   }
 
+  if (isPastel) {
+    return (
+      <div
+        className="relative w-full max-w-sm mx-auto my-8 py-2 px-3 select-none animate-fade-in-up"
+        aria-label="Hitung mundur pernikahan"
+      >
+        <div className="absolute inset-0 bg-purple-600/10 blur-2xl rounded-full pointer-events-none" />
+
+        <div className="relative flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          <div className="flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full backdrop-blur-xl bg-purple-950/70 border border-purple-400/40 shadow-[0_8px_32px_rgba(168,85,247,0.25)] transition-transform hover:scale-105 -translate-y-1">
+            <span className="font-serif text-2xl sm:text-3xl font-bold text-white leading-none">
+              {String(timeLeft.hari).padStart(2, "0")}
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 mt-1">
+              Hari
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center w-18 h-18 sm:w-22 sm:h-22 rounded-full backdrop-blur-xl bg-[#1d1238]/80 border border-purple-400/35 shadow-[0_6px_24px_rgba(147,51,234,0.2)] transition-transform hover:scale-105 translate-y-1">
+            <span className="font-serif text-xl sm:text-2xl font-bold text-purple-100 leading-none">
+              {String(timeLeft.jam).padStart(2, "0")}
+            </span>
+            <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-purple-300 mt-1">
+              Jam
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center w-18 h-18 sm:w-22 sm:h-22 rounded-full backdrop-blur-xl bg-[#221542]/80 border border-purple-400/35 shadow-[0_6px_24px_rgba(192,132,252,0.2)] transition-transform hover:scale-105 -translate-y-2">
+            <span className="font-serif text-xl sm:text-2xl font-bold text-purple-100 leading-none">
+              {String(timeLeft.menit).padStart(2, "0")}
+            </span>
+            <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-purple-300 mt-1">
+              Menit
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full backdrop-blur-xl bg-purple-900/50 border border-purple-300/40 shadow-[0_4px_16px_rgba(192,132,252,0.3)] transition-transform hover:scale-105 translate-y-2">
+            <span className="font-serif text-lg sm:text-xl font-bold text-purple-200 leading-none">
+              {String(timeLeft.detik).padStart(2, "0")}
+            </span>
+            <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-purple-300 mt-1">
+              Detik
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center gap-2.5 sm:gap-4 md:gap-6 my-8 animate-fade-in-up">
       {timeUnits.map((unit) => (
