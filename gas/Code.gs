@@ -150,6 +150,19 @@ function doGet(e) {
 }
 
 /**
+ * Sanitize string fields to prevent formula injection in Google Sheets.
+ * Prefixes values starting with =, +, -, or @ with a leading apostrophe.
+ */
+function sanitizeForSheet(value) {
+  if (!value) return "";
+  var str = value.toString().trim();
+  if (str.length > 0 && "=+-@".indexOf(str.charAt(0)) !== -1) {
+    return "'" + str;
+  }
+  return str;
+}
+
+/**
  * POST Handler — Menyimpan ucapan & konfirmasi RSVP tamu.
  */
 function doPost(e) {
@@ -184,9 +197,46 @@ function doPost(e) {
       });
     }
 
+    // Rate limit: reject if same slug+nama_tamu submitted within last 2 minutes
+    var rsvpData = sheet.getDataRange().getValues();
+    var now = new Date();
+    var COOLDOWN_MS = 2 * 60 * 1000;
+
+    for (var r = rsvpData.length - 1; r > 0; r--) {
+      var rowSlug = (rsvpData[r][0] || "").toString().trim().toLowerCase();
+      var rowName = (rsvpData[r][1] || "").toString().trim().toLowerCase();
+      var rowTimestamp = rsvpData[r][4];
+
+      if (rowSlug === slug.trim().toLowerCase() &&
+          rowName === nama_tamu.trim().toLowerCase()) {
+        var rowDate;
+        if (rowTimestamp instanceof Date) {
+          rowDate = rowTimestamp;
+        } else {
+          rowDate = new Date(rowTimestamp);
+        }
+        if (!isNaN(rowDate.getTime()) && (now.getTime() - rowDate.getTime()) < COOLDOWN_MS) {
+          return createJsonResponse({
+            status: "error",
+            message: "RSVP sudah tercatat. Silakan tunggu beberapa menit sebelum mengirim ulang."
+          });
+        }
+        break;
+      }
+    }
+
+    // Validate kehadiran against allowed values
+    var kehadiranNormalized = kehadiran.trim();
+    var ALLOWED_KEHADIRAN = ["Hadir", "Tidak Hadir"];
+    if (ALLOWED_KEHADIRAN.indexOf(kehadiranNormalized) === -1) {
+      return createJsonResponse({
+        status: "error",
+        message: "Nilai kehadiran harus 'Hadir' atau 'Tidak Hadir'"
+      });
+    }
+
     var timestamp = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
-    // Append baris baru: slug | nama_tamu | kehadiran | pesan | timestamp | status
-    sheet.appendRow([slug.trim(), nama_tamu.trim(), kehadiran.trim(), pesan ? pesan.trim() : "", timestamp, "Approved"]);
+    sheet.appendRow([slug.trim(), sanitizeForSheet(nama_tamu), kehadiranNormalized, sanitizeForSheet(pesan), timestamp, "Approved"]);
 
     return createJsonResponse({
       status: "success",

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const secret = body.secret || searchParams.get("secret");
 
     const expectedSecret = process.env.REVALIDATE_SECRET;
-    if (expectedSecret && secret !== expectedSecret) {
+    if (!expectedSecret || secret !== expectedSecret) {
       return NextResponse.json(
         { error: "Invalid revalidation secret" },
         { status: 401 }
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
   const secret = searchParams.get("secret");
 
   const expectedSecret = process.env.REVALIDATE_SECRET;
-  if (expectedSecret && secret !== expectedSecret) {
+  if (!expectedSecret || secret !== expectedSecret) {
     return NextResponse.json(
       { error: "Invalid revalidation secret" },
       { status: 401 }

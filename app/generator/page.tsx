@@ -20,6 +20,10 @@ interface RsvpSummaryData {
 }
 
 export default function GeneratorAndAdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'link' | 'recap'>('link');
 
   // ==========================================
@@ -116,6 +120,55 @@ export default function GeneratorAndAdminPage() {
     if (tableFilter === 'tidak') return (entry.kehadiran || '').toLowerCase() !== 'hadir';
     return true;
   }) || [];
+
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const res = await fetch('/api/verify-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      if (res.ok) {
+        setIsAuthenticated(true);
+      } else {
+        const data = await res.json();
+        setAuthError(data.error || 'Password salah');
+      }
+    } catch {
+      setAuthError('Gagal menghubungi server');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#1a0a0a] to-[#2d1515] flex items-center justify-center p-4">
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center">
+          <h1 className="text-2xl font-bold text-white mb-2">Portal Admin</h1>
+          <p className="text-white/60 text-sm mb-6">Masukkan password untuk mengakses generator tautan dan rekap RSVP.</p>
+          <input
+            type="password"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            placeholder="Password"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 mb-3 focus:outline-none focus:border-[#C9A96E]"
+          />
+          {authError && <p className="text-red-400 text-sm mb-3">{authError}</p>}
+          <button
+            onClick={handleLogin}
+            disabled={authLoading}
+            className="w-full py-3 bg-gradient-to-r from-[#C9A96E] to-[#8B7355] text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {authLoading ? 'Memverifikasi...' : 'Masuk'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
