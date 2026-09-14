@@ -164,6 +164,12 @@ function sanitizeForSheet(value) {
 
 /**
  * POST Handler — Menyimpan ucapan & konfirmasi RSVP tamu.
+ * Dilengkapi proteksi anti-spam multi-lapis:
+ * 1. Honeypot check (menolak bot otomatis)
+ * 2. CacheService slug velocity limit (maksimal 10 submisi/menit per slug)
+ * 3. CacheService global velocity limit (maksimal 60 submisi/menit lintas klien untuk cegah kuota habis)
+ * 4. Fast Cache-based duplicate cooldown per nama + slug (2 menit)
+ * 5. Sanitasi formula injection & validasi enum kehadiran
  */
 function doPost(e) {
   try {
@@ -175,15 +181,76 @@ function doPost(e) {
     }
 
     var payload = JSON.parse(e.postData.contents);
-    var slug = payload.slug;
-    var nama_tamu = payload.nama_tamu;
-    var kehadiran = payload.kehadiran;
-    var pesan = payload.pesan;
+
+    // 1. Honeypot trap check
+    if (payload.honeypot || payload.website_url || payload.hp) {
+      return createJsonResponse({
+        status: "error",
+        message: "Spam submission rejected"
+      });
+    }
+
+    var slug = (payload.slug || "").toString().trim().toLowerCase();
+    var nama_tamu = (payload.nama_tamu || "").toString().trim();
+    var kehadiran = (payload.kehadiran || "").toString().trim();
+    var pesan = (payload.pesan || "").toString().trim();
 
     if (!slug || !nama_tamu || !kehadiran) {
       return createJsonResponse({
         status: "error",
         message: "Field slug, nama_tamu, dan kehadiran wajib diisi"
+      });
+    }
+
+    // 2. Length constraints validation
+    if (slug.length > 50 || nama_tamu.length > 100 || pesan.length > 1000) {
+      return createJsonResponse({
+        status: "error",
+        message: "Panjang karakter melebihi batas yang diizinkan"
+      });
+    }
+
+    // 3. Low-cost in-memory velocity rate limiting via CacheService (tanpa beban baca sheet)
+    var cache = CacheService.getScriptCache();
+
+    // 3a. Global script velocity: max 60 per menit untuk mencegah pengurasan kuota shared GAS 20k/hari
+    var globalVelKey = "rsvp_global_vel";
+    var currentGlobalCount = parseInt(cache.get(globalVelKey) || "0", 10);
+    if (currentGlobalCount >= 60) {
+      return createJsonResponse({
+        status: "error",
+        message: "Sistem penerimaan sedang sibuk. Silakan coba 1 menit lagi."
+      });
+    }
+    cache.put(globalVelKey, (currentGlobalCount + 1).toString(), 60);
+
+    // 3b. Per-slug velocity: max 10 per menit per slug (mencegah penyerang memvariasi nama tamu untuk flood)
+    var slugVelKey = "rsvp_slug_vel_" + slug;
+    var currentSlugCount = parseInt(cache.get(slugVelKey) || "0", 10);
+    if (currentSlugCount >= 10) {
+      return createJsonResponse({
+        status: "error",
+        message: "Trafik ucapan untuk undangan ini terlalu padat. Silakan tunggu 1 menit."
+      });
+    }
+    cache.put(slugVelKey, (currentSlugCount + 1).toString(), 60);
+
+    // 3c. Fast cache-based duplicate name cooldown (2 menit)
+    var recentKey = "rsvp_recent_" + slug + "_" + nama_tamu.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (cache.get(recentKey)) {
+      return createJsonResponse({
+        status: "error",
+        message: "RSVP atas nama ini sudah tercatat. Silakan tunggu beberapa menit sebelum mengirim ulang."
+      });
+    }
+    cache.put(recentKey, "1", 120);
+
+    // 4. Validate kehadiran against allowed enum
+    var ALLOWED_KEHADIRAN = ["Hadir", "Tidak Hadir"];
+    if (ALLOWED_KEHADIRAN.indexOf(kehadiran) === -1) {
+      return createJsonResponse({
+        status: "error",
+        message: "Nilai kehadiran harus 'Hadir' atau 'Tidak Hadir'"
       });
     }
 
@@ -197,46 +264,8 @@ function doPost(e) {
       });
     }
 
-    // Rate limit: reject if same slug+nama_tamu submitted within last 2 minutes
-    var rsvpData = sheet.getDataRange().getValues();
-    var now = new Date();
-    var COOLDOWN_MS = 2 * 60 * 1000;
-
-    for (var r = rsvpData.length - 1; r > 0; r--) {
-      var rowSlug = (rsvpData[r][0] || "").toString().trim().toLowerCase();
-      var rowName = (rsvpData[r][1] || "").toString().trim().toLowerCase();
-      var rowTimestamp = rsvpData[r][4];
-
-      if (rowSlug === slug.trim().toLowerCase() &&
-          rowName === nama_tamu.trim().toLowerCase()) {
-        var rowDate;
-        if (rowTimestamp instanceof Date) {
-          rowDate = rowTimestamp;
-        } else {
-          rowDate = new Date(rowTimestamp);
-        }
-        if (!isNaN(rowDate.getTime()) && (now.getTime() - rowDate.getTime()) < COOLDOWN_MS) {
-          return createJsonResponse({
-            status: "error",
-            message: "RSVP sudah tercatat. Silakan tunggu beberapa menit sebelum mengirim ulang."
-          });
-        }
-        break;
-      }
-    }
-
-    // Validate kehadiran against allowed values
-    var kehadiranNormalized = kehadiran.trim();
-    var ALLOWED_KEHADIRAN = ["Hadir", "Tidak Hadir"];
-    if (ALLOWED_KEHADIRAN.indexOf(kehadiranNormalized) === -1) {
-      return createJsonResponse({
-        status: "error",
-        message: "Nilai kehadiran harus 'Hadir' atau 'Tidak Hadir'"
-      });
-    }
-
     var timestamp = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
-    sheet.appendRow([slug.trim(), sanitizeForSheet(nama_tamu), kehadiranNormalized, sanitizeForSheet(pesan), timestamp, "Approved"]);
+    sheet.appendRow([slug, sanitizeForSheet(nama_tamu), kehadiran, sanitizeForSheet(pesan), timestamp, "Approved"]);
 
     return createJsonResponse({
       status: "success",

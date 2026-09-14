@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGuestbook, getClientData } from "@/lib/api";
+import { verifyAdminSession } from "@/lib/auth";
 
 /**
  * API Route to fetch and calculate RSVP summary & catering headcount (Q4).
+ * Protected by admin session cookie.
  *
  * GET /api/rsvp-summary?slug=desti-anton
  */
 export async function GET(request: NextRequest) {
+  // Enforce server-side admin session check (fail-closed)
+  const sessionToken = request.cookies.get("admin_session")?.value;
+  if (!verifyAdminSession(sessionToken)) {
+    return NextResponse.json(
+      { error: "Unauthorized. Sesi admin diperlukan untuk mengakses rekap RSVP." },
+      { status: 401 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const slug = searchParams.get("slug");
 

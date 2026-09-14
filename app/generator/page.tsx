@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface RsvpSummaryData {
@@ -121,6 +121,24 @@ export default function GeneratorAndAdminPage() {
     return true;
   }) || [];
 
+  useEffect(() => {
+    let isMounted = true;
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/verify-admin');
+        if (res.ok && isMounted) {
+          setIsAuthenticated(true);
+        }
+      } catch {
+        // Unauthenticated
+      }
+    };
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleLogin = async () => {
     setAuthLoading(true);
     setAuthError('');
@@ -143,6 +161,17 @@ export default function GeneratorAndAdminPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/verify-admin', { method: 'DELETE' });
+    } catch {
+      // Ignore
+    } finally {
+      setIsAuthenticated(false);
+      setAdminPassword('');
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a0a0a] to-[#2d1515] flex items-center justify-center p-4">
@@ -150,9 +179,6 @@ export default function GeneratorAndAdminPage() {
           <h1 className="text-2xl font-bold text-white mb-2">Portal Admin</h1>
           <p className="text-white/60 text-sm mb-6">
             Masukkan password untuk mengakses generator tautan dan rekap RSVP.
-            <span className="block text-xs text-white/40 mt-1.5">
-              (Default lokal: <code className="text-[#C9A96E] font-mono bg-white/10 px-1.5 py-0.5 rounded">admin123</code>)
-            </span>
           </p>
           <input
             type="password"
@@ -181,13 +207,20 @@ export default function GeneratorAndAdminPage() {
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-slate-200 gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center justify-between gap-2 mb-1">
               <Link
                 href="/"
                 className="text-xs text-rose-600 font-semibold hover:underline flex items-center gap-1"
               >
                 ← Kembali ke Beranda
               </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-xs text-slate-500 hover:text-red-600 font-medium transition-colors px-2.5 py-1 rounded-lg border border-slate-200 hover:border-red-200 bg-white shadow-xs"
+              >
+                Keluar (Logout)
+              </button>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Temu Waktu — Admin &amp; Generator Suite

@@ -25,6 +25,9 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
     setNama(guestName || "");
   }
 
+  const [honeypot, setHoneypot] = useState("");
+  const [formTime] = useState(() => Date.now());
+
   const [toast, setToast] = useState<{
     message: string;
     variant: "success" | "error";
@@ -96,7 +99,11 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
     setIsSubmitting(true);
 
     try {
-      const success = await submitRsvp(payload);
+      const success = await submitRsvp({
+        ...payload,
+        honeypot,
+        formTime,
+      });
       if (!success) {
         showToast("Gagal mengirim ke server, coba lagi nanti", "error");
       } else {
@@ -135,6 +142,18 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
             : "bg-[#FDFBF7] border border-[#D4AF37]/50 rounded-3xl text-[#3A0A13] shadow-[0_12px_40px_rgba(107,23,40,0.08)]"
         )}
       >
+        {/* Invisible honeypot field for bot trapping */}
+        <input
+          type="text"
+          name="website_url"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden pointer-events-none"
+          style={{ display: "none" }}
+        />
         <h3
           className={cn(
             "text-xl font-bold text-center mb-6",
