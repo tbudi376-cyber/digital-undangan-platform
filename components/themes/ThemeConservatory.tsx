@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ClientData, RsvpEntry } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { CoverScreen } from "@/components/ui/CoverScreen";
@@ -56,6 +56,22 @@ export function ThemeConservatory({
 }) {
   const [activeModal, setActiveModal] = useState<"gallery" | "events" | "gift" | "rsvp" | null>(null);
   const [guestbookList, setGuestbookList] = useState<RsvpEntry[]>(initialGuestbook);
+
+  useEffect(() => {
+    if (!activeModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveModal(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [activeModal]);
 
   const handleRsvpSuccess = (entry: {
     nama_tamu: string;
@@ -229,10 +245,10 @@ export function ThemeConservatory({
         <button
           type="button"
           onClick={() => scrollToSection("couple")}
-          className="inline-flex flex-col items-center gap-1 text-[10px] font-serif tracking-widest uppercase text-emerald-300/70 hover:text-emerald-200 transition-colors pt-2"
+          className="inline-flex flex-col items-center gap-1 text-[10px] font-serif tracking-widest uppercase text-emerald-300/70 hover:text-emerald-200 transition-colors pt-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-lg p-1"
         >
           <span>Gulir ke Lembaran Lengkap</span>
-          <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
+          <ArrowDown className="w-3.5 h-3.5 text-emerald-400 animate-pulse transition-transform" />
         </button>
       </section>
 
@@ -242,12 +258,17 @@ export function ThemeConservatory({
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
           role="dialog"
           aria-modal="true"
+          onClick={() => setActiveModal(null)}
         >
-          <div className="relative w-full max-w-md bg-[#0A1A12] border border-emerald-500/40 rounded-3xl p-6 shadow-2xl text-left">
+          <div
+            className="relative w-full max-w-md bg-[#0A1A12] border border-emerald-500/40 rounded-3xl p-6 shadow-2xl text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
+              aria-label="Tutup Dialog (Esc)"
               onClick={() => setActiveModal(null)}
-              className="absolute top-4 right-4 text-emerald-300 hover:text-white p-1 rounded-full bg-emerald-950/60 border border-emerald-500/30"
+              className="absolute top-4 right-4 text-emerald-300 hover:text-white p-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
