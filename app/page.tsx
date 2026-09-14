@@ -57,42 +57,42 @@ const THEMES = [
   },
   {
     id: "rustic",
-    tag: "BOTANICAL EARTH",
-    title: "Tuscan Sage & Linen",
+    tag: "FIELD JOURNAL",
+    title: "Tuscan Field Journal",
     description:
-      "Palet zaitun Mediterania, bayangan kertas deckled edge, motif dedaunan, dan kehangatan terracotta alami yang teduh.",
+      "Komposisi scrapbook asimetris bernuansa Tuscan, galeri polaroid beraksen selotip, kartu agenda bertingkat, dan pembatas sobekan kertas alami.",
     image:
       "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop",
     palette: "from-[#2E4A3D]/10 via-[#A65D46]/10 to-transparent",
     tagColor: "bg-[#2E4A3D]/10 text-[#2E4A3D] border-[#2E4A3D]/25",
     buttonGrad: "bg-gradient-to-r from-[#2E4A3D] to-[#3D6352] text-[#F8F5EE]",
-    features: ["Handmade Paper Texture", "Olive Vine Dividers", "Deckled Edge Cards"],
+    features: ["Field Journal Collage", "Polaroid Tape Grid", "Torn-Paper Edge SVG"],
   },
   {
     id: "pastel",
-    tag: "AURA ROMANCE",
-    title: "Soft Pastel Twilight",
+    tag: "STORY TIMELINE",
+    title: "Love Story Timeline",
     description:
-      "Nuansa deep violet, ambient glow, dan kartu digital ATM interaktif untuk pernikahan modern kontemporer yang memikat.",
+      "Alur linimasa cerita cinta dengan berkas cahaya menyala, kartu bergantian, gugusan bola kaca hitung mundur melayang, dan dompet amplop digital yang mekar saat disentuh.",
     image:
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=800&auto=format&fit=crop",
     palette: "from-purple-950/20 via-purple-900/10 to-transparent",
     tagColor: "bg-purple-900/10 text-purple-700 border-purple-200",
     buttonGrad: "bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-purple-100 border border-purple-400/30",
-    features: ["Ambient Violet Glow", "Live Equalizer Audio", "ATM Card Replica"],
+    features: ["Love Story Timeline", "Countdown Orb Cluster", "Fanned Card Wallet"],
   },
   {
     id: "minimalist",
-    tag: "SWISS EDITORIAL",
-    title: "Architectural Monochrome",
+    tag: "SPLIT SCREEN",
+    title: "Architectural Split Screen",
     description:
-      "Tipografi raksasa asimetris, hairline grid, plakat pameran seni, dan kontras monokrom tajam tanpa distraksi visual.",
+      "Tata letak split-screen penuh bergantian, rel navigasi vertikal bernomor indeks di sisi kiri, dan tipografi raksasa asimetris kontemporer.",
     image:
       "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop",
     palette: "from-black/10 via-zinc-400/10 to-transparent",
     tagColor: "bg-black/5 text-black border-black/20",
     buttonGrad: "bg-black text-white hover:bg-zinc-800",
-    features: ["Swiss Architectural Grid", "Asymmetrical Typography", "Museum Plakat"],
+    features: ["Split-Screen Sections", "Vertical Index Rail", "Overlapping Typography"],
   },
 ];
 
