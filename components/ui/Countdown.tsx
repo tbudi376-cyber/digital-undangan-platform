@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface CountdownProps {
   targetDate: string;
-  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel" | "conservatory";
 }
 
 const emptySubscribe = () => () => {};
@@ -50,7 +50,8 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
   const isPastel = variant === "pastel";
-  const isElegant = variant === "elegant" || (!isPastel && !isRustic && !isMinimalist);
+  const isConservatory = variant === "conservatory";
+  const isElegant = variant === "elegant" || (!isPastel && !isRustic && !isMinimalist && !isConservatory);
 
   const timeUnits = [
     { label: "Hari", value: timeLeft.hari },
@@ -87,6 +88,8 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
             "flex flex-col items-center justify-center w-16 h-18 sm:w-20 sm:h-22 rounded-2xl transition-all shadow-sm",
             isPastel
               ? "bg-[#1d1637]/80 border border-purple-800/50 text-white backdrop-blur-md"
+              : isConservatory
+              ? "bg-[#0F3321]/80 border border-emerald-700/40 shadow-[0_4px_16px_rgba(16,60,35,0.15)] text-[#F9F8F4] backdrop-blur-md"
               : isRustic
               ? "bg-[#F8F5EE] border border-[#2E4A3D]/25 shadow-[0_4px_16px_rgba(46,74,61,0.08)] text-stone-800"
               : isElegant
@@ -97,7 +100,7 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
           <span
             className={cn(
               "text-2xl sm:text-3xl font-bold leading-none",
-              isRustic ? "font-serif text-[#2E4A3D]" : isElegant ? "font-serif text-[#6B1728]" : "font-serif"
+              isConservatory ? "font-serif text-[#A8E6CF]" : isRustic ? "font-serif text-[#2E4A3D]" : isElegant ? "font-serif text-[#6B1728]" : "font-serif"
             )}
           >
             {String(unit.value).padStart(2, "0")}
@@ -107,6 +110,8 @@ export function Countdown({ targetDate, variant = "elegant" }: CountdownProps) {
               "text-[9px] sm:text-[10px] uppercase tracking-widest mt-1.5 font-medium",
               isPastel
                 ? "text-purple-300"
+                : isConservatory
+                ? "text-emerald-400/80"
                 : isRustic
                 ? "text-[#A65D46]"
                 : isElegant

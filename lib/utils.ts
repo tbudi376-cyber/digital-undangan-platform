@@ -65,5 +65,5 @@ export function getDriveImageUrl(fileIdOrUrl: string): string {
   const fileId = extractDriveFileId(fileIdOrUrl);
   if (!fileId) return fileIdOrUrl; // fallback to original URL
 
-  return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
 }

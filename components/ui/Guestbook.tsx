@@ -6,7 +6,7 @@ import { MessageSquareHeart } from "lucide-react";
 
 interface GuestbookProps {
   rsvps: RsvpEntry[];
-  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel" | "conservatory";
 }
 
 export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
@@ -15,6 +15,7 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
   const isPastel = variant === "pastel";
+  const isConservatory = variant === "conservatory";
 
   return (
     <div
@@ -22,6 +23,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
         "w-full max-w-lg mx-auto p-6 md:p-8 shadow-sm transition-all mt-12 text-left animate-fade-in-up",
         isPastel
           ? "bg-[#15102a]/80 border border-purple-800/40 text-slate-100 rounded-3xl backdrop-blur-sm"
+          : isConservatory
+          ? "bg-[#0D2818]/80 border border-emerald-700/30 text-[#F9F8F4] rounded-3xl backdrop-blur-sm"
           : isRustic
           ? "bg-[#F8F5EE] border-2 border-[#2E4A3D]/25 border-dashed rounded-3xl text-stone-800 shadow-[0_10px_30px_rgba(46,74,61,0.06)]"
           : isMinimalist
@@ -35,6 +38,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
             "w-5 h-5",
             isPastel
               ? "text-purple-400"
+              : isConservatory
+              ? "text-emerald-400"
               : isRustic
               ? "text-[#2E4A3D]"
               : isMinimalist
@@ -47,6 +52,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
             "text-xl font-bold",
             isMinimalist
               ? "font-mono uppercase tracking-[0.2em] text-sm text-black"
+              : isConservatory
+              ? "font-serif text-[#A8E6CF]"
               : isRustic
               ? "font-serif text-[#2E4A3D]"
               : "font-serif text-[#6B1728]"
@@ -68,6 +75,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
                 "p-4 transition-all duration-300",
                 isPastel
                   ? "bg-purple-950/30 border border-purple-800/30 rounded-2xl"
+                  : isConservatory
+                  ? "bg-emerald-950/30 border border-emerald-700/25 rounded-2xl"
                   : isRustic
                   ? "bg-[#FAF7F0] border border-[#2E4A3D]/15 rounded-2xl"
                   : isMinimalist
@@ -82,6 +91,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
                       "w-9 h-9 flex items-center justify-center text-xs font-bold",
                       isPastel
                         ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-full shadow-inner"
+                        : isConservatory
+                        ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-[#F9F8F4] rounded-full shadow-inner"
                         : isRustic
                         ? "bg-[#2E4A3D] text-[#F8F5EE] rounded-full"
                         : isMinimalist
@@ -95,7 +106,7 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
                     <p
                       className={cn(
                         "text-sm font-semibold leading-tight",
-                        isMinimalist ? "font-sans uppercase text-xs" : isRustic ? "font-serif text-[#2E4A3D]" : "font-serif text-[#50101E]"
+                        isMinimalist ? "font-sans uppercase text-xs" : isConservatory ? "font-serif text-[#A8E6CF]" : isRustic ? "font-serif text-[#2E4A3D]" : "font-serif text-[#50101E]"
                       )}
                     >
                       {entry.nama_tamu}
@@ -106,6 +117,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
                         entry.kehadiran === "Hadir"
                           ? isPastel
                             ? "bg-purple-900/60 text-purple-200 border border-purple-700/40 rounded-full"
+                            : isConservatory
+                            ? "bg-emerald-800/40 text-emerald-200 border border-emerald-600/30 rounded-full"
                             : isRustic
                             ? "bg-[#2E4A3D]/10 text-[#2E4A3D] rounded-full"
                             : isMinimalist
@@ -138,6 +151,8 @@ export function Guestbook({ rsvps, variant = "elegant" }: GuestbookProps) {
                   "mt-2.5 text-xs md:text-sm leading-relaxed italic border-l-2 pl-3 py-0.5",
                   isPastel
                     ? "text-slate-300 border-purple-500/40"
+                    : isConservatory
+                    ? "text-emerald-200/70 border-emerald-500/40 font-serif"
                     : isRustic
                     ? "text-stone-600 border-[#A65D46]/60 font-serif"
                     : isMinimalist

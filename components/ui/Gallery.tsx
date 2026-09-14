@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface GalleryProps {
   images: string; // comma separated urls
-  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel" | "conservatory";
 }
 
 export function Gallery({ images, variant = "elegant" }: GalleryProps) {
@@ -20,6 +20,7 @@ export function Gallery({ images, variant = "elegant" }: GalleryProps) {
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
   const isPastel = variant === "pastel";
+  const isConservatory = variant === "conservatory";
 
   return (
     <>
@@ -32,6 +33,8 @@ export function Gallery({ images, variant = "elegant" }: GalleryProps) {
               "relative aspect-square md:aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:z-10 group",
               isPastel
                 ? "border-2 border-purple-900/40"
+                : isConservatory
+                ? "border-2 border-emerald-700/30 shadow-[0_8px_25px_rgba(16,60,35,0.15)] rounded-2xl"
                 : isRustic
                 ? "border-2 border-[#2E4A3D]/20 shadow-[0_8px_25px_rgba(46,74,61,0.1)] rounded-2xl"
                 : isMinimalist

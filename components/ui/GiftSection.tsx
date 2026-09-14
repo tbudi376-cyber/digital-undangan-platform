@@ -13,7 +13,7 @@ interface GiftSectionProps {
   physicalGiftAddress?: string;
   physicalGiftRecipient?: string;
   physicalGiftPhone?: string;
-  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel" | "conservatory";
 }
 
 export function GiftSection({
@@ -49,7 +49,8 @@ export function GiftSection({
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
   const isPastel = variant === "pastel";
-  const isElegant = variant === "elegant" || (!isPastel && !isRustic && !isMinimalist);
+  const isConservatory = variant === "conservatory";
+  const isElegant = variant === "elegant" || (!isPastel && !isRustic && !isMinimalist && !isConservatory);
 
   const hasBank = Boolean(bankName && bankAccount);
   const hasQris = Boolean(qrisImage);
@@ -63,6 +64,8 @@ export function GiftSection({
         "w-full max-w-md mx-auto p-6 md:p-8 transition-all animate-fade-in-up text-center",
         isPastel
           ? "bg-[#15102a]/80 border border-purple-900/40 text-slate-100 rounded-3xl backdrop-blur-sm"
+          : isConservatory
+          ? "bg-[#0D2818]/80 border border-emerald-700/30 text-[#F9F8F4] rounded-3xl backdrop-blur-sm"
           : isRustic
           ? "bg-[#F8F5EE] border-2 border-[#2E4A3D]/20 border-dashed rounded-3xl text-stone-800 shadow-[0_10px_30px_rgba(46,74,61,0.06)]"
           : isMinimalist
@@ -76,6 +79,8 @@ export function GiftSection({
             "w-5 h-5",
             isPastel
               ? "text-purple-400"
+              : isConservatory
+              ? "text-emerald-400"
               : isRustic
               ? "text-[#2E4A3D]"
               : isMinimalist
@@ -86,7 +91,7 @@ export function GiftSection({
         <h3
           className={cn(
             "text-xl font-bold tracking-tight",
-            isMinimalist ? "font-mono uppercase tracking-[0.2em] text-sm" : isRustic ? "font-serif text-[#2E4A3D]" : "font-serif text-[#6B1728]"
+            isMinimalist ? "font-mono uppercase tracking-[0.2em] text-sm" : isConservatory ? "font-serif text-[#A8E6CF]" : isRustic ? "font-serif text-[#2E4A3D]" : "font-serif text-[#6B1728]"
           )}
         >
           Tanda Kasih
@@ -98,6 +103,8 @@ export function GiftSection({
           "text-xs md:text-sm mb-8 leading-relaxed max-w-xs mx-auto",
           isPastel
             ? "text-slate-300"
+            : isConservatory
+            ? "text-emerald-200/70 font-serif"
             : isRustic
             ? "text-stone-600 font-serif"
             : isMinimalist
@@ -116,6 +123,8 @@ export function GiftSection({
             "p-6 rounded-2xl mb-6 transition-all duration-300 relative overflow-hidden text-left",
             isPastel
               ? "bg-gradient-to-br from-[#1e173a] to-[#2a1d52] border border-purple-700/50 shadow-lg text-slate-100"
+              : isConservatory
+              ? "bg-gradient-to-br from-[#0A1F14] via-[#0D2818] to-[#071510] border border-emerald-600/40 shadow-lg text-[#F9F8F4]"
               : isRustic
               ? "bg-[#FAF7F0] border border-[#2E4A3D]/25 shadow-sm text-stone-800"
               : isMinimalist
@@ -153,6 +162,8 @@ export function GiftSection({
               "text-xs font-bold uppercase tracking-wider mb-1",
               isPastel
                 ? "text-purple-200"
+                : isConservatory
+                ? "text-emerald-400/80 font-serif"
                 : isRustic
                 ? "text-[#A65D46] font-serif"
                 : isMinimalist
@@ -166,7 +177,7 @@ export function GiftSection({
           <p
             className={cn(
               "text-2xl tracking-widest font-mono font-medium mb-1",
-              isPastel ? "text-white" : isRustic ? "text-[#2E4A3D]" : isMinimalist ? "text-black tracking-normal" : "text-[#FDFBF7] drop-shadow-sm"
+              isPastel ? "text-white" : isConservatory ? "text-[#A8E6CF]" : isRustic ? "text-[#2E4A3D]" : isMinimalist ? "text-black tracking-normal" : "text-[#FDFBF7] drop-shadow-sm"
             )}
           >
             {bankAccount}
@@ -177,6 +188,8 @@ export function GiftSection({
               "text-xs mb-5",
               isPastel
                 ? "text-purple-200/80"
+                : isConservatory
+                ? "text-emerald-300/60"
                 : isRustic
                 ? "text-stone-500"
                 : isMinimalist
@@ -196,6 +209,8 @@ export function GiftSection({
                 ? "bg-emerald-600 text-white"
                 : isPastel
                 ? "bg-purple-600 hover:bg-purple-500 text-white"
+                : isConservatory
+                ? "bg-emerald-600 text-[#F9F8F4] hover:bg-emerald-500 font-medium tracking-wider shadow-md"
                 : isRustic
                 ? "bg-[#2E4A3D] text-[#F8F5EE] hover:bg-[#243B30]"
                 : isMinimalist
@@ -215,7 +230,7 @@ export function GiftSection({
           <p
             className={cn(
               "text-xs font-semibold uppercase tracking-widest mb-3",
-              isPastel ? "text-purple-300" : isRustic ? "text-[#2E4A3D] font-serif" : isMinimalist ? "text-zinc-600 font-mono text-[10px]" : "text-[#851C32]"
+              isPastel ? "text-purple-300" : isConservatory ? "text-emerald-400/80 font-serif" : isRustic ? "text-[#2E4A3D] font-serif" : isMinimalist ? "text-zinc-600 font-mono text-[10px]" : "text-[#851C32]"
             )}
           >
             QRIS Pembayaran
@@ -238,6 +253,8 @@ export function GiftSection({
             "p-5 rounded-2xl border text-left transition-all duration-300",
             isPastel
               ? "bg-[#1d1637] border-purple-800/40 text-slate-200"
+              : isConservatory
+              ? "bg-[#0D2818] border-emerald-700/30 text-[#F9F8F4]"
               : isRustic
               ? "bg-[#FAF7F0] border border-[#2E4A3D]/20 text-stone-800"
               : isMinimalist
@@ -251,6 +268,8 @@ export function GiftSection({
                 "w-4 h-4",
                 isPastel
                   ? "text-purple-400"
+                  : isConservatory
+                  ? "text-emerald-400"
                   : isRustic
                   ? "text-[#2E4A3D]"
                   : isMinimalist
@@ -297,6 +316,8 @@ export function GiftSection({
                 ? "bg-emerald-600 text-white"
                 : isPastel
                 ? "bg-purple-900/60 hover:bg-purple-900 text-purple-200 border border-purple-700/50"
+                : isConservatory
+                ? "bg-emerald-800/40 text-emerald-200 hover:bg-emerald-800/60 border border-emerald-600/40"
                 : isRustic
                 ? "bg-[#2E4A3D]/10 text-[#2E4A3D] hover:bg-[#2E4A3D]/20 border border-[#2E4A3D]/30"
                 : isMinimalist

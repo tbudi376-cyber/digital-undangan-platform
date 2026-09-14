@@ -407,7 +407,7 @@ export function ThemeConservatory({
           </p>
 
           <div className="inline-block max-w-full p-2.5 sm:p-4 rounded-3xl border border-emerald-500/40 outline outline-1 outline-emerald-500/20 outline-offset-4 bg-[#0A1A12]/60 backdrop-blur-sm shadow-sm mb-12">
-            <Countdown targetDate={data.akad_date} variant="rustic" />
+            <Countdown targetDate={data.akad_date} variant="conservatory" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 text-left">
@@ -504,7 +504,7 @@ export function ThemeConservatory({
               <p className="text-xs font-serif italic text-stone-300 mb-10">
                 Langkah perjalanan kasih dalam paviliun kenangan
               </p>
-              <Gallery images={data.gallery_images} variant="rustic" />
+              <Gallery images={data.gallery_images} variant="conservatory" />
             </section>
           </>
         )}
@@ -520,7 +520,7 @@ export function ThemeConservatory({
             physicalGiftAddress={data.physical_gift_address}
             physicalGiftRecipient={data.physical_gift_recipient}
             physicalGiftPhone={data.physical_gift_phone}
-            variant="rustic"
+            variant="conservatory"
           />
         </section>
 
@@ -538,11 +538,11 @@ export function ThemeConservatory({
             slug={data.slug}
             guestName={guestName}
             onRsvpSuccess={handleRsvpSuccess}
-            variant="rustic"
+            variant="conservatory"
           />
 
           <div id="guestbook" className="mt-16 text-left">
-            <Guestbook rsvps={guestbookList} variant="rustic" />
+            <Guestbook rsvps={guestbookList} variant="conservatory" />
           </div>
         </section>
       </div>

@@ -9,7 +9,7 @@ import type { RsvpPayload } from "@/types";
 interface RsvpFormProps {
   slug: string;
   guestName?: string;
-  variant?: "elegant" | "rustic" | "minimalist" | "pastel";
+  variant?: "elegant" | "rustic" | "minimalist" | "pastel" | "conservatory";
   onRsvpSuccess?: (entry: { nama_tamu: string; kehadiran: "Hadir" | "Tidak Hadir"; pesan: string; timestamp: string }) => void;
 }
 
@@ -116,6 +116,7 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
   const isPastel = variant === "pastel";
+  const isConservatory = variant === "conservatory";
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -125,6 +126,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
           "p-6 md:p-8 transition-all shadow-sm",
           isPastel
             ? "bg-[#15102a]/80 border border-purple-800/40 text-slate-100 rounded-3xl backdrop-blur-md"
+            : isConservatory
+            ? "bg-[#0D2818]/80 border border-emerald-700/30 text-[#F9F8F4] rounded-3xl backdrop-blur-md"
             : isRustic
             ? "bg-[#F8F5EE] border-2 border-[#2E4A3D]/25 border-dashed rounded-3xl text-stone-800 shadow-[0_10px_30px_rgba(46,74,61,0.06)]"
             : isMinimalist
@@ -137,6 +140,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
             "text-xl font-bold text-center mb-6",
             isMinimalist
               ? "font-mono uppercase tracking-[0.2em] text-sm text-black"
+              : isConservatory
+              ? "font-serif text-[#A8E6CF]"
               : isRustic
               ? "font-serif text-[#2E4A3D]"
               : "font-serif text-[#6B1728]"
@@ -153,6 +158,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
               "block text-xs font-semibold uppercase tracking-wider mb-2",
               isPastel
                 ? "text-purple-200"
+                : isConservatory
+                ? "text-emerald-300/80 font-serif"
                 : isRustic
                 ? "text-[#2E4A3D] font-serif"
                 : isMinimalist
@@ -173,6 +180,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
               "w-full px-4 py-3 border outline-none transition-all duration-200 text-sm",
               isPastel
                 ? "bg-purple-950/40 border-purple-800/60 text-white placeholder:text-purple-300/40 focus:border-purple-400 rounded-xl"
+                : isConservatory
+                ? "bg-emerald-950/40 border-emerald-700/40 text-[#F9F8F4] placeholder:text-emerald-400/30 focus:border-emerald-500 rounded-xl"
                 : isRustic
                 ? "bg-white border-[#2E4A3D]/25 text-stone-800 placeholder:text-stone-400 focus:border-[#2E4A3D] rounded-xl"
                 : isMinimalist
@@ -189,6 +198,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
               "block text-xs font-semibold uppercase tracking-wider mb-2",
               isPastel
                 ? "text-purple-200"
+                : isConservatory
+                ? "text-emerald-300/80 font-serif"
                 : isRustic
                 ? "text-[#2E4A3D] font-serif"
                 : isMinimalist
@@ -209,6 +220,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
                     selected
                       ? isPastel
                         ? "bg-purple-600 border-purple-400 text-white shadow-md shadow-purple-900/40 rounded-xl"
+                        : isConservatory
+                        ? "bg-emerald-600 border-emerald-500 text-[#F9F8F4] shadow-md shadow-emerald-900/40 rounded-xl"
                         : isRustic
                         ? "bg-[#2E4A3D] border-[#2E4A3D] text-[#F8F5EE] shadow-md shadow-stone-800/20 rounded-xl"
                         : isMinimalist
@@ -216,6 +229,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
                         : "bg-[#6B1728] border-[#D4AF37] text-[#F3E5AB] shadow-md shadow-[#6B1728]/30 rounded-xl"
                       : isPastel
                       ? "bg-purple-950/20 border-purple-800/40 text-purple-200/70 hover:border-purple-700 rounded-xl"
+                      : isConservatory
+                      ? "bg-emerald-950/20 border-emerald-700/30 text-emerald-200/70 hover:border-emerald-600 rounded-xl"
                       : isRustic
                       ? "bg-white/70 border-[#2E4A3D]/20 text-stone-700 hover:border-[#2E4A3D]/40 rounded-xl"
                       : isMinimalist
@@ -247,6 +262,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
                 "block text-xs font-semibold uppercase tracking-wider",
                 isPastel
                   ? "text-purple-200"
+                  : isConservatory
+                  ? "text-emerald-300/80 font-serif"
                   : isRustic
                   ? "text-[#2E4A3D] font-serif"
                   : isMinimalist
@@ -277,6 +294,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
               "w-full px-4 py-3 border outline-none transition-all duration-200 resize-none text-sm",
               isPastel
                 ? "bg-purple-950/40 border-purple-800/60 text-white placeholder:text-purple-300/40 focus:border-purple-400 rounded-xl"
+                : isConservatory
+                ? "bg-emerald-950/40 border-emerald-700/40 text-[#F9F8F4] placeholder:text-emerald-400/30 focus:border-emerald-500 rounded-xl font-serif"
                 : isRustic
                 ? "bg-white border-[#2E4A3D]/25 text-stone-800 placeholder:text-stone-400 focus:border-[#2E4A3D] rounded-xl font-serif"
                 : isMinimalist
@@ -294,6 +313,8 @@ export function RsvpForm({ slug, guestName, variant = "elegant", onRsvpSuccess }
             "w-full py-3.5 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-[0.99] cursor-pointer text-sm",
             isPastel
               ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-700/30 text-white rounded-xl"
+              : isConservatory
+              ? "bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 shadow-emerald-900/30 text-[#F9F8F4] rounded-xl font-serif tracking-wider"
               : isRustic
               ? "bg-[#2E4A3D] hover:bg-[#243B30] text-[#F8F5EE] shadow-stone-800/20 rounded-xl font-serif tracking-wider"
               : isMinimalist

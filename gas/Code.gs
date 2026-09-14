@@ -359,7 +359,7 @@ function processDriveFiles(fileIdOrUrlString, folder) {
         file.moveTo(folder);
       }
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      urls.push("https://drive.google.com/uc?export=view&id=" + id);
+      urls.push("https://drive.google.com/thumbnail?id=" + id + "&sz=w1600");
     } catch (err) {
       Logger.log("Peringatan: Gagal memproses file ID " + id + ": " + err);
       // Jika bukan file ID drive murni (misal URL luar), simpan as-is
