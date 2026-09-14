@@ -84,29 +84,44 @@ export function Gallery({ images, variant = "elegant" }: GalleryProps) {
               }
             }}
             className={cn(
-              "relative aspect-square md:aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:z-10 group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-              isPastel
-                ? "border-2 border-purple-900/40 focus-visible:ring-purple-400"
+              "relative cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:z-20 group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+              isRustic
+                ? cn(
+                    "aspect-[3/4] p-2 sm:p-2.5 pb-6 sm:pb-8 bg-white border border-stone-200/80 shadow-[0_10px_25px_rgba(46,74,61,0.12)] rounded-xs focus-visible:ring-[#2E4A3D]",
+                    i % 2 === 0 ? "rotate-[-2.5deg] hover:rotate-0" : "rotate-[2.5deg] hover:rotate-0",
+                    i % 3 === 1 ? "mt-4 sm:mt-8" : "",
+                    i % 3 === 2 ? "-mt-2 sm:-mt-4" : ""
+                  )
+                : isPastel
+                ? "aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl border-2 border-purple-900/40 focus-visible:ring-purple-400"
                 : isConservatory
-                ? "border-2 border-emerald-700/30 shadow-[0_8px_25px_rgba(16,60,35,0.15)] rounded-2xl focus-visible:ring-emerald-400"
-                : isRustic
-                ? "border-2 border-[#2E4A3D]/20 shadow-[0_8px_25px_rgba(46,74,61,0.1)] rounded-2xl focus-visible:ring-[#2E4A3D]"
+                ? "aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl border-2 border-emerald-700/30 shadow-[0_8px_25px_rgba(16,60,35,0.15)] focus-visible:ring-emerald-400"
                 : isMinimalist
-                ? "border border-black/20 rounded-none shadow-none focus-visible:ring-black"
-                : "border-2 border-[#D4AF37]/40 shadow-[0_10px_30px_rgba(107,23,40,0.12)] rounded-2xl focus-visible:ring-[#D4AF37]",
-              i % 3 === 1 ? "md:mt-6" : "",
-              i % 3 === 2 ? "md:-mt-3" : ""
+                ? "aspect-square md:aspect-[3/4] overflow-hidden border border-black/20 rounded-none shadow-none focus-visible:ring-black"
+                : "aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl border-2 border-[#D4AF37]/40 shadow-[0_10px_30px_rgba(107,23,40,0.12)] focus-visible:ring-[#D4AF37]",
+              !isRustic && i % 3 === 1 ? "md:mt-6" : "",
+              !isRustic && i % 3 === 2 ? "md:-mt-3" : ""
             )}
           >
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300 z-10" />
+            {/* Rustic Tape Accent */}
+            {isRustic && (
+              <div
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 sm:w-14 h-3 sm:h-4 bg-[#E0D8C3]/80 -rotate-2 border border-stone-300/40 shadow-xs z-20 pointer-events-none"
+                aria-hidden="true"
+              />
+            )}
 
-            <DriveImage
-              url={url}
-              alt={`Foto momen pernikahan ${i + 1} dari ${imageUrls.length}`}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-            />
+            <div className={cn("relative w-full h-full overflow-hidden", isRustic ? "rounded-xs" : "")}>
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300 z-10" />
+
+              <DriveImage
+                url={url}
+                alt={`Foto momen pernikahan ${i + 1} dari ${imageUrls.length}`}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+            </div>
           </div>
         ))}
       </div>
