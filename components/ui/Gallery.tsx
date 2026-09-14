@@ -13,12 +13,10 @@ interface GalleryProps {
 export function Gallery({ images, variant = "elegant" }: GalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  if (!images) return null;
-  const imageUrls = images
+  const imageUrls = (images || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  if (imageUrls.length === 0) return null;
 
   const isRustic = variant === "rustic";
   const isMinimalist = variant === "minimalist";
@@ -64,6 +62,8 @@ export function Gallery({ images, variant = "elegant" }: GalleryProps) {
       document.body.style.overflow = originalOverflow;
     };
   }, [selectedIndex, handleClose, handlePrev, handleNext]);
+
+  if (!images || imageUrls.length === 0) return null;
 
   const selectedImage = selectedIndex !== null ? imageUrls[selectedIndex] : null;
 
