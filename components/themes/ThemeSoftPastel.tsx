@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ClientData, RsvpEntry } from "@/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, createGoogleCalendarUrl } from "@/lib/utils";
 import { DriveImage } from "@/components/ui/DriveImage";
 import { CoverScreen } from "@/components/ui/CoverScreen";
 import { RsvpForm } from "@/components/ui/RsvpForm";
@@ -54,66 +54,46 @@ export function ThemeSoftPastel({
     ]);
   };
 
-  const formatCalendarUtc = (
-    dateStr?: string,
-    timeStr?: string,
-    fallbackHour = 8,
-    isStart = true
-  ): string | null => {
-    if (!dateStr) return null;
-    const parts = dateStr.split("-").map(Number);
-    if (parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) return null;
-    const [year, month, day] = parts;
-
-    let offsetHours = 7; // Default WIB (UTC+7)
-    if (timeStr) {
-      const upper = timeStr.toUpperCase();
-      if (upper.includes("WITA")) offsetHours = 8;
-      else if (upper.includes("WIT")) offsetHours = 9;
-    }
-
-    let hour = fallbackHour;
-    let minute = 0;
-    if (timeStr) {
-      const matches = Array.from(timeStr.matchAll(/(\d{1,2})[:.](\d{2})/g));
-      if (matches.length > 0) {
-        const target =
-          !isStart && matches.length > 1 ? matches[matches.length - 1] : matches[0];
-        hour = parseInt(target[1], 10);
-        minute = parseInt(target[2], 10);
-      }
-    }
-
-    const localUtcMs = Date.UTC(year, month - 1, day, hour - offsetHours, minute, 0);
-    const d = new Date(localUtcMs);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(
-      d.getUTCHours()
-    )}${pad(d.getUTCMinutes())}00Z`;
+  const createAkadCalendarUrl = () => {
+    return createGoogleCalendarUrl({
+      title: `Akad Nikah: ${data.groom_nickname} & ${data.bride_nickname}`,
+      details: `Akad Nikah Pernikahan ${data.groom_full_name} & ${data.bride_full_name}.\nLokasi: ${
+        data.akad_location || ""
+      }`,
+      location: data.akad_location || "",
+      startDate: data.akad_date,
+      startTime: data.akad_time,
+      fallbackStartHour: 8,
+    });
   };
 
-  const createCalendarUrl = () => {
-    const title = encodeURIComponent(
-      `Pernikahan ${data.groom_nickname} & ${data.bride_nickname}`
-    );
-    const details = encodeURIComponent(
-      `Akad & Resepsi Pernikahan ${data.groom_full_name} & ${data.bride_full_name}.\nLokasi: ${
-        data.resepsi_location || data.akad_location
-      }`
-    );
-    const location = encodeURIComponent(data.resepsi_location || data.akad_location || "");
+  const createResepsiCalendarUrl = () => {
+    return createGoogleCalendarUrl({
+      title: `Resepsi Pernikahan: ${data.groom_nickname} & ${data.bride_nickname}`,
+      details: `Resepsi Pernikahan ${data.groom_full_name} & ${data.bride_full_name}.\nLokasi: ${
+        data.resepsi_location || data.akad_location || ""
+      }`,
+      location: data.resepsi_location || data.akad_location || "",
+      startDate: data.resepsi_date || data.akad_date,
+      startTime: data.resepsi_time || data.akad_time,
+      fallbackStartHour: 11,
+    });
+  };
 
-    const startUtc =
-      formatCalendarUtc(data.akad_date, data.akad_time, 8, true) || "20261231T010000Z";
-    const endUtc =
-      formatCalendarUtc(
-        data.resepsi_date || data.akad_date,
-        data.resepsi_time || data.akad_time,
-        14,
-        false
-      ) || "20261231T070000Z";
-
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${startUtc}/${endUtc}`;
+  const createCombinedCalendarUrl = () => {
+    const isSameDay = !data.resepsi_date || data.resepsi_date === data.akad_date;
+    return createGoogleCalendarUrl({
+      title: `Pernikahan ${data.groom_nickname} & ${data.bride_nickname}`,
+      details: `Akad & Resepsi Pernikahan ${data.groom_full_name} & ${data.bride_full_name}.\nLokasi: ${
+        data.resepsi_location || data.akad_location || ""
+      }`,
+      location: data.resepsi_location || data.akad_location || "",
+      startDate: data.akad_date,
+      startTime: data.akad_time,
+      endDate: isSameDay ? data.akad_date : data.resepsi_date,
+      endTime: isSameDay ? (data.resepsi_time || data.akad_time) : data.resepsi_time,
+      fallbackStartHour: 8,
+    });
   };
 
   return (
@@ -289,7 +269,7 @@ export function ThemeSoftPastel({
 
                   <div className="mt-4">
                     <a
-                      href={createCalendarUrl()}
+                      href={createCombinedCalendarUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-950 hover:bg-purple-900 text-purple-200 text-xs font-semibold border border-purple-600/50 transition-all shadow-md active:scale-95 cursor-pointer"
@@ -343,17 +323,29 @@ export function ThemeSoftPastel({
                     <p className="leading-relaxed">{data.akad_location}</p>
                   </div>
 
-                  {data.akad_map_url && (
+                  <div className="space-y-2">
+                    {data.akad_map_url && (
+                      <a
+                        href={data.akad_map_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-purple-900/80 hover:bg-purple-850 text-white text-xs font-semibold border border-purple-500/40 transition-all shadow-md active:scale-95 cursor-pointer"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-purple-300" />
+                        Petunjuk Google Maps
+                      </a>
+                    )}
+
                     <a
-                      href={data.akad_map_url}
+                      href={createAkadCalendarUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-purple-900/80 hover:bg-purple-850 text-white text-xs font-semibold border border-purple-500/40 transition-all shadow-md active:scale-95 cursor-pointer"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 text-xs font-semibold border border-purple-600/40 transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
-                      <MapPin className="w-3.5 h-3.5 text-purple-300" />
-                      Petunjuk Google Maps
+                      <CalendarPlus className="w-3.5 h-3.5 text-purple-300" />
+                      Simpan Jadwal Akad
                     </a>
-                  )}
+                  </div>
                 </article>
               </div>
             </div>
@@ -399,7 +391,7 @@ export function ThemeSoftPastel({
                     <p className="leading-relaxed">{data.resepsi_location}</p>
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {data.resepsi_map_url && (
                       <a
                         href={data.resepsi_map_url}
@@ -411,6 +403,16 @@ export function ThemeSoftPastel({
                         Petunjuk Google Maps
                       </a>
                     )}
+
+                    <a
+                      href={createResepsiCalendarUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-fuchsia-950/80 hover:bg-fuchsia-900 text-fuchsia-200 text-xs font-semibold border border-fuchsia-600/40 transition-all shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5 text-fuchsia-300" />
+                      Simpan Jadwal Resepsi
+                    </a>
 
                     {data.stream_link && (
                       <a
