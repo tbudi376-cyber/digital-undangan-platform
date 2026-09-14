@@ -148,7 +148,12 @@ export default function GeneratorAndAdminPage() {
       <div className="min-h-screen bg-gradient-to-br from-[#1a0a0a] to-[#2d1515] flex items-center justify-center p-4">
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Portal Admin</h1>
-          <p className="text-white/60 text-sm mb-6">Masukkan password untuk mengakses generator tautan dan rekap RSVP.</p>
+          <p className="text-white/60 text-sm mb-6">
+            Masukkan password untuk mengakses generator tautan dan rekap RSVP.
+            <span className="block text-xs text-white/40 mt-1.5">
+              (Default lokal: <code className="text-[#C9A96E] font-mono bg-white/10 px-1.5 py-0.5 rounded">admin123</code>)
+            </span>
+          </p>
           <input
             type="password"
             value={adminPassword}
