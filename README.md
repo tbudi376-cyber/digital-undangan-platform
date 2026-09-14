@@ -67,21 +67,26 @@ Setiap tema dirancang secara presisi dengan identitas tipografi, palet warna, da
 │   ├── page.tsx                # Landing Page & Katalog Tema Temu Waktu
 │   ├── layout.tsx              # Root Layout & Metadata
 │   ├── globals.css             # Desain Sistem & CSS Tokens
-│   └── undangan/[slug]/        # Dynamic Route Undangan Pengantin
+│   ├── [slug]/                 # Dynamic Route Undangan Pengantin (ISR)
+│   └── generator/              # Portal Tamu & Rekap RSVP Admin (Password Gated)
 ├── components/                 # Komponen Antarmuka Reusable
 │   ├── themes/                 # Implementasi 5 Tema Undangan
 │   │   ├── ThemeRenderer.tsx   # Switcher Tema Modular & Global Floating Widgets
-│   │   ├── ThemeElegant.tsx    # Classic Heritage
-│   │   ├── ThemeRustic.tsx     # Botanical Forest
-│   │   ├── ThemeMinimalist.tsx # Modern Minimalist
-│   │   ├── ThemePastel.tsx     # Soft Pastel
-│   │   └── ThemeConservatory.tsx # Living Scene Glasshouse
-│   └── ui/                     # Komponen UI Atomik & Floating
+│   │   ├── ThemeElegant.tsx    # The Royal Heritage (Editorial Magazine)
+│   │   ├── ThemeRustic.tsx     # Field Journal (Polaroid Collage)
+│   │   ├── ThemeMinimalist.tsx # Architectural Monolith (50/50 Split Screen)
+│   │   ├── ThemeSoftPastel.tsx # Love Story (Glowing Timeline & Orb Cluster)
+│   │   └── ThemeConservatory.tsx # The Whispering Conservatory (Living Scene Canvas)
+│   └── ui/                     # Komponen UI Atomik, Shared & Floating
 │       ├── AtmosphereParticles.tsx # Engine Partikel Ambient
 │       ├── WaveAudioPlayer.tsx     # Animated Wave Equalizer Player
 │       ├── FloatingWishesTicker.tsx# Live Marquee Ucapan Tamu
-│       ├── AudioPlayer.tsx         # Background Music Player
-│       └── LinkGeneratorModal.tsx  # Generator Tautan Tamu
+│       ├── Toast.tsx               # Non-blocking Toast Notification
+│       ├── Gallery.tsx             # Responsive Lightbox Gallery (Keyboard Nav)
+│       ├── Countdown.tsx           # Multi-theme Countdown Timer
+│       ├── GiftSection.tsx         # Digital Envelope & QRIS
+│       ├── RsvpForm.tsx            # RSVP Form with Optimistic UI & Cooldown
+│       └── Guestbook.tsx           # Filtered Wishes & Doa List
 ├── gas/                        # Google Apps Script Source
 │   ├── Code.gs                 # Web App API Handler untuk Google Sheets
 │   └── appsscript.json         # Manifest GAS

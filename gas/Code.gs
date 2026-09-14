@@ -434,6 +434,14 @@ function onFormSubmitAutomation(e) {
       cleanSlug = "wedding";
     }
 
+    // Acquire script lock to avoid race conditions on slug uniqueness check and row append
+    var lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(30000);
+    } catch (lockErr) {
+      Logger.log("Peringatan: Gagal memperoleh lock: " + lockErr);
+    }
+
     // Periksa duplikasi slug di sheet DataKlien (Kolom A)
     var existingSlugs = [];
     var lastRow = sheet.getLastRow();
@@ -507,5 +515,11 @@ function onFormSubmitAutomation(e) {
 
   } catch (err) {
     Logger.log("❌ Error onFormSubmitAutomation: " + err.toString());
+  } finally {
+    if (lock) {
+      try {
+        lock.releaseLock();
+      } catch (lockReleaseErr) {}
+    }
   }
 }

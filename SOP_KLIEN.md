@@ -1,6 +1,8 @@
 # SOP Klien — Kuesioner Temu Waktu
 
-*Dokumen ini digunakan oleh admin Temu Waktu untuk meminta data dari klien via WhatsApp. Admin cukup menyalin template di bawah ini dan mengirimkannya ke klien setelah mereka memilih tema dan melakukan pembayaran.*
+*Dokumen ini digunakan oleh admin Temu Waktu untuk operasional data intake klien. Platform mendukung 2 saluran intake:*
+*1. **WhatsApp DFY Intake (Manual)**: Admin menyalin kuesioner WhatsApp di bawah ke klien, lalu memasukkan data ke Google Sheets tab `DataKlien`.*
+*2. **Google Form Automation (Otomatis)**: Terhubung ke trigger `onFormSubmitAutomation` di `gas/Code.gs` untuk pendaftaran mandiri dengan auto-drive folder & auto-slug collision.*
 
 ---
 
@@ -15,7 +17,7 @@ Jika ada data yang belum pasti atau mau dikosongkan dulu, cukup tulis tanda stri
 ────────────────────────
 **🤍 DATA DASAR & LINK**
 ────────────────────────
-1. Tema Pilihan (Elegant / Rustic / Minimalist / Soft Pastel): 
+1. Tema Pilihan (The Royal Heritage / Field Journal Rustic / Architectural Monolith / Love Story Pastel / The Whispering Conservatory): 
 2. Permintaan Nama Link Undangan (Custom Slug): 
 *(Contoh: anton-desti atau andi-nina. Bebas huruf kecil, tanpa spasi. Link akan menjadi: temuwaktu.com/nama-kalian)*
 3. Link Google Drive (Berisi foto utama, galeri prewedding, dan file lagu pilihan): 

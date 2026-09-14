@@ -32,13 +32,22 @@ d:/web-tubagus/digital_undangan/
 │   └── globals.css           ← Custom animations + Tailwind base
 ├── components/
 │   ├── themes/
-│   │   ├── ThemeRenderer.tsx  ← Maps theme_id → component
-│   │   ├── ThemeElegant.tsx   ← Rose & gold serif theme
-│   │   └── ThemeRustic.tsx    ← Earthy sage & amber theme
+│   │   ├── ThemeRenderer.tsx     ← Maps theme_id → component & handles floating widgets
+│   │   ├── ThemeElegant.tsx      ← The Royal Heritage (Editorial Magazine layout)
+│   │   ├── ThemeRustic.tsx       ← Field Journal (Polaroid Collage layout)
+│   │   ├── ThemeMinimalist.tsx   ← Architectural Monolith (50/50 Split Screen layout)
+│   │   ├── ThemeSoftPastel.tsx   ← Love Story (Timeline, Orb Cluster & Fanned Wallet)
+│   │   └── ThemeConservatory.tsx ← The Whispering Conservatory (Living Scene Canvas & Modals)
 │   └── ui/
-│       ├── DriveImage.tsx     ← Google Drive → next/image wrapper
-│       ├── RsvpForm.tsx       ← RSVP form + optimistic UI + guestbook
-│       └── Toast.tsx          ← Slide-in toast notification
+│       ├── DriveImage.tsx        ← Google Drive → next/image wrapper
+│       ├── Gallery.tsx           ← Lightbox gallery with keyboard navigation
+│       ├── Countdown.tsx         ← Multi-theme countdown
+│       ├── GiftSection.tsx       ← Bank accounts, QRIS & physical gift
+│       ├── RsvpForm.tsx          ← RSVP form + optimistic UI + guestbook
+│       ├── Guestbook.tsx         ← Filtered guestbook wishes
+│       ├── WaveAudioPlayer.tsx   ← Background music player with waveform equalizer
+│       ├── FloatingWishesTicker.tsx ← Floating marquee for live wishes
+│       └── Toast.tsx             ← Slide-in toast notification
 ├── gas/
 │   └── Code.gs               ← Google Apps Script (paste into GAS editor)
 ├── lib/

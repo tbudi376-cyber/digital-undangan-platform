@@ -51,7 +51,7 @@ export function Toast({
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-[90vw] sm:max-w-md text-center",
         "px-6 py-3 rounded-2xl shadow-lg backdrop-blur-sm",
         "text-sm font-medium",
         "transition-all duration-300 ease-out",
